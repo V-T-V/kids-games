@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <!-- 禁止触屏长按选中/调出菜单，对儿童拖拽交互更友好 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="童趣游戏屋" />
+    <meta name="theme-color" content="#ffd166" />
+    <meta
+      name="description"
+      content="为 3~6 岁儿童设计的 81 个寓教于乐网页小游戏，支持本地进度与离线安装。"
+    />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <title>童趣游戏屋 · 81 个小游戏</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- 根容器：所有界面由 JS 渲染（SPA / hash 路由） -->
+    <div id="app"></div>
+
+    <!-- 全屏特效层：粒子、彩纸、过渡，永远在最上层 -->
+    <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+
+    <!-- 全局吉祥物"点点" -->
+    <div id="mascot" class="mascot mascot--hidden" aria-hidden="true">
+      <div class="mascot__body"></div>
+      <div class="mascot__eye mascot__eye--left"></div>
+      <div class="mascot__eye mascot__eye--right"></div>
+      <div class="mascot__mouth"></div>
+      <div class="mascot__cheek mascot__cheek--left"></div>
+      <div class="mascot__cheek mascot__cheek--right"></div>
+      <div class="mascot__bubble" id="mascot-bubble"></div>
+    </div>
+
+    <!-- 家长面板入口（角落小齿轮） -->
+    <button
+      id="parent-btn"
+      class="parent-btn"
+      type="button"
+      title="家长面板"
+      aria-label="家长面板"
+    >
+      <span class="parent-btn__icon">⚙️</span>
+    </button>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,568 @@
+/* ==========================================================================
+   童趣游戏屋 —— 全局主题样式
+   设计语言：圆润、饱和柔和、大触控区、强反馈。
+   所有颜色用 CSS 变量驱动，便于主题切换与各游戏复用。
+   ========================================================================== */
+
+:root {
+  /* 童趣调色板（饱和柔和） */
+  --c-pink: #ff6b9d;
+  --c-yellow: #ffd93d;
+  --c-blue: #4d96ff;
+  --c-green: #6bcf7f;
+  --c-purple: #a55eea;
+  --c-orange: #ff9f43;
+  --c-teal: #00d2d3;
+  --c-red: #ff6348;
+  /* 扩展色（第二批游戏） */
+  --c-brown: #b08968;
+  --c-cyan: #22d3ee;
+  --c-indigo: #6366f1;
+
+  /* 中性 */
+  --bg: #fff8ef;
+  --bg-soft: #fff0e0;
+  --ink: #3a2e4a;
+  --ink-soft: #6b5d7a;
+  --white: #ffffff;
+  --shadow: 0 8px 24px rgba(58, 46, 74, 0.15);
+  --shadow-lg: 0 16px 48px rgba(58, 46, 74, 0.22);
+
+  /* 尺寸 */
+  --radius: 28px;
+  --radius-sm: 18px;
+  --touch: 64px; /* 最小触控区 */
+
+  /* 字体：圆润无衬线，系统兜底 */
+  --font:
+    "Comic Sans MS", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+    rounded, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  /* 柔和的渐变底，营造温暖童趣氛围 */
+  background-image:
+    radial-gradient(circle at 15% 20%, #ffe1ec 0, transparent 45%),
+    radial-gradient(circle at 85% 15%, #fff3c4 0, transparent 40%),
+    radial-gradient(circle at 50% 90%, #d4f4dd 0, transparent 50%);
+  touch-action: manipulation;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ==========================================================================
+   特效画布层
+   ========================================================================== */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+}
+.fx-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   按钮
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--touch);
+  padding: 0 36px;
+  border-radius: 999px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--c-blue);
+  box-shadow:
+    0 6px 0 #2f6dd6,
+    var(--shadow);
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.15s ease;
+  white-space: nowrap;
+}
+.btn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #2f6dd6,
+    var(--shadow);
+}
+.btn__icon {
+  font-size: 1.5em;
+  line-height: 1;
+}
+.btn--primary {
+  background: var(--c-green);
+  box-shadow:
+    0 6px 0 #4ba85f,
+    var(--shadow);
+}
+.btn--primary:active {
+  box-shadow:
+    0 2px 0 #4ba85f,
+    var(--shadow);
+}
+.btn--secondary {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow:
+    0 6px 0 #e6d9c8,
+    var(--shadow);
+}
+.btn--secondary:active {
+  box-shadow:
+    0 2px 0 #e6d9c8,
+    var(--shadow);
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  box-shadow: none;
+  min-height: auto;
+  padding: 8px 16px;
+  font-size: 1.05rem;
+}
+.btn--ghost:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   覆盖层（模态）
+   ========================================================================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(58, 46, 74, 0.45);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.overlay--in {
+  opacity: 1;
+}
+.overlay__card {
+  width: min(440px, 100%);
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px 28px 28px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.85);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.overlay--in .overlay__card {
+  transform: scale(1);
+}
+.overlay__emoji {
+  font-size: 4.5rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  animation: bounce-soft 1.2s ease-in-out infinite;
+}
+.overlay__title {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+}
+.overlay__body {
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.overlay__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.overlay--clear .overlay__title {
+  color: var(--c-orange);
+}
+.overlay--rest .overlay__title {
+  color: var(--c-purple);
+}
+
+@keyframes bounce-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* ==========================================================================
+   Toast
+   ========================================================================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translate(-50%, 40px);
+  z-index: 9600;
+  padding: 14px 28px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  opacity: 0;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+}
+.toast--show {
+  opacity: 0.95;
+  transform: translate(-50%, 0);
+}
+
+/* ==========================================================================
+   家长按钮（角落齿轮）
+   ========================================================================== */
+.parent-btn {
+  position: fixed;
+  right: 14px;
+  top: 14px;
+  z-index: 8000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  opacity: 0.55;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.parent-btn:active {
+  transform: rotate(60deg);
+}
+.parent-btn:hover {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   吉祥物"点点"
+   ========================================================================== */
+.mascot {
+  position: fixed;
+  z-index: 8500;
+  width: 88px;
+  height: 88px;
+  left: 24px;
+  bottom: 24px;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  pointer-events: none;
+}
+.mascot--hidden {
+  opacity: 0;
+  transform: scale(0.6) translateY(20px);
+  pointer-events: none;
+}
+.mascot__body {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(circle at 35% 30%, #ffe27a, var(--c-orange));
+  box-shadow:
+    inset -6px -8px 0 rgba(0, 0, 0, 0.08),
+    var(--shadow);
+  animation: mascot-idle 2.4s ease-in-out infinite;
+}
+.mascot__eye {
+  position: absolute;
+  top: 36px;
+  width: 12px;
+  height: 16px;
+  background: var(--ink);
+  border-radius: 50%;
+}
+.mascot__eye--left {
+  left: 26px;
+}
+.mascot__eye--right {
+  right: 26px;
+}
+.mascot__mouth {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 12px;
+  border: 3px solid var(--ink);
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  background: #ff6b9d;
+}
+.mascot__cheek {
+  position: absolute;
+  top: 50px;
+  width: 12px;
+  height: 8px;
+  background: rgba(255, 107, 157, 0.5);
+  border-radius: 50%;
+}
+.mascot__cheek--left {
+  left: 14px;
+}
+.mascot__cheek--right {
+  right: 14px;
+}
+
+/* 情绪 */
+.mascot--happy .mascot__mouth {
+  height: 16px;
+  border-radius: 0 0 24px 24px;
+}
+.mascot--wink .mascot__eye--right {
+  height: 3px;
+  border-radius: 2px;
+}
+.mascot--sad .mascot__mouth {
+  border: 3px solid var(--ink);
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  top: 62px;
+}
+.mascot--dance {
+  animation: mascot-dance 0.5s ease-in-out infinite;
+}
+.mascot--cheer .mascot__body {
+  animation: mascot-jump 0.4s ease-in-out infinite;
+}
+
+@keyframes mascot-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes mascot-dance {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes mascot-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-14px) scale(1.05);
+  }
+}
+
+/* 气泡 */
+.mascot__bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px) scale(0.6);
+  margin-bottom: 4px;
+  padding: 10px 18px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  max-width: 240px;
+  white-space: normal;
+  width: max-content;
+  text-align: center;
+}
+.mascot__bubble--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px) scale(1);
+}
+.mascot__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: var(--white);
+}
+
+/* ==========================================================================
+   通用游戏容器
+   ========================================================================== */
+.game {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top, 0) 16px env(safe-area-inset-bottom, 0);
+}
+.game__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 4px;
+  flex-shrink: 0;
+}
+.game__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+.game__stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  overflow: auto;
+  padding: 8px 0 20px;
+}
+
+/* ==========================================================================
+   响应式
+   ========================================================================== */
+@media (max-width: 480px) {
+  :root {
+    --touch: 56px;
+  }
+  .btn {
+    padding: 0 24px;
+    font-size: 1.2rem;
+  }
+  .overlay__title {
+    font-size: 1.5rem;
+  }
+}
+
+/* 减少动效（无障碍） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   游戏顶栏：难度徽章 + 统一进度条
+   ========================================================================== */
+.game__diff {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+}
+.game__diff.lobby__status-tab--easy {
+  background: #d4f4dd;
+  color: #2e7d32;
+}
+.game__diff.lobby__status-tab--medium {
+  background: #fff3c4;
+  color: #f57f17;
+}
+.game__diff.lobby__status-tab--hard {
+  background: #ffcdd2;
+  color: #c62828;
+}
+
+.game__progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 6px;
+  flex-shrink: 0;
+}
+.game__progress-track {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  max-width: 300px;
+}
+.game__progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-green), var(--c-yellow));
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.game__progress-text {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  min-width: 36px;
+  text-align: right;
+}
