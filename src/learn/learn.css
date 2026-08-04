@@ -29,6 +29,10 @@
   font-weight: 700;
   margin-bottom: 12px;
 }
+.learn__back,
+.learn-path__back {
+  min-height: 44px;
+}
 .learn__back:active,
 .learn-path__back:active {
   transform: scale(0.95);
