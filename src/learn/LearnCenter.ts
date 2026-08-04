@@ -122,6 +122,7 @@ function makePathCard(
   const total = path.games.length;
   const pct = total > 0 ? Math.round((cleared / total) * 100) : 0;
   const done = cleared >= total;
+  const inProgress = cleared > 0 && !done;
   const color = getCssVar(path.themeVar);
 
   const card = document.createElement("button");
@@ -132,8 +133,12 @@ function makePathCard(
     "aria-label",
     `${path.title}，${path.ageRange}，${cleared}/${total} 通关`,
   );
+  // 首次访问（全 0 进度）：第 1 阶路径标"从这里开始"
+  const allZero = LEARN_PATHS.every((p) => pathClearedCount(p, save) === 0);
+  const startHint = allZero && path.stage === 1 ? "👉 从这里开始" : "";
   card.innerHTML = `
     ${done ? '<div class="learn-card__done">✅</div>' : ""}
+    ${startHint ? `<div class="learn-card__start">${startHint}</div>` : ""}
     <div class="learn-card__icon" aria-hidden="true">${path.icon}</div>
     <div class="learn-card__title">${path.title}</div>
     <div class="learn-card__age">${path.ageRange} · 第 ${path.stage} 阶</div>

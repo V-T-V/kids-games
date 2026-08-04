@@ -159,7 +159,11 @@
   width: 100%;
   padding: 14px 18px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--rec-color, #4d96ff) 15%, #fff), #fff);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--rec-color, #4d96ff) 15%, #fff),
+    #fff
+  );
   border: 2px solid var(--rec-color, #4d96ff);
   box-shadow: var(--shadow);
   text-align: left;
@@ -240,6 +244,28 @@
   right: 12px;
   font-size: 1.4rem;
   z-index: 2;
+}
+.learn-card__start {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--path-color, var(--c-blue));
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 999px;
+  z-index: 2;
+  animation: learn-card__start-bounce 1.5s ease-in-out infinite;
+}
+@keyframes learn-card__start-bounce {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
 }
 .learn-card__icon {
   font-size: 3rem;
