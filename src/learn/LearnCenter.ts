@@ -72,7 +72,7 @@ export function renderLearnCenter(root: HTMLElement): void {
     chip.style.setProperty("--domain-color", d.color);
     chip.innerHTML = `<span class="learn__domain-icon">${d.icon}</span>
       <span class="learn__domain-name">${d.title}</span>
-      <span class="learn__domain-prog">${prog.cleared}/${prog.total}${prog.avgStars > 0 ? " · ⭐" + prog.avgStars : ""}</span>
+      <span class="learn__domain-prog">${pct}%${prog.avgStars > 0 ? " · ⭐" + prog.avgStars : ""}</span>
       <div class="learn__domain-bar"><div class="learn__domain-fill" style="width:${pct}%"></div></div>`;
     dGrid.appendChild(chip);
   }
