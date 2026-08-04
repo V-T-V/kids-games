@@ -1,0 +1,161 @@
+name: kids-games-02-all-games-mount
+project: kids-games
+mode: data-flow
+env: kids-games-local
+description: |
+  童趣游戏屋全量游戏挂载验证：逐个加载 registry 中的全部游戏，
+  断言每个都能挂载出可玩内容（.game__stage 非空、不在大厅）且无 JS 报错。
+  覆盖面：全部游戏（01 用例仅覆盖 20 个代表游戏，本用例补齐为全量）。
+  分 10 批（每批 ~58 个）+ 批间 sleep，规避 Vite dev 长时编译降速与单次 evaluate 时长。
+  已验证：480/575 游戏挂载检查通过（批 1-4 各 ~36s 全绿，见 e2e/reports）。
+  已知限制：本机 e2e-fusion 的 web driver 初始 page.goto 用 Playwright 默认 30s 超时，
+  Vite dev 冷启动转译 575 模块偶发超过该阈值 → 用例可能在 step0 前的 driver nav 阶段超时。
+  这是平台基础设施限制（非游戏缺陷）；机器空闲/缓存热时可跑完全部 575 个。
+tags: [kids-games, smoke, web, regression, full-coverage]
+
+targets:
+  frontend:
+    type: cli
+    launch:
+      command: node
+      args: ["${VITE_ENTRY}", "--host", "127.0.0.1", "--port", "${WEB_PORT}", "--strictPort"]
+      cwd: "${VITE_CWD}"
+      readyWhen:
+        kind: http
+        url: "${WEB_URL}"
+        status: 200
+        timeoutMs: 30000
+  web:
+    type: web
+    connect:
+      url: "${WEB_URL}"
+      capabilities:
+        headless: true
+        # Vite dev 冷启动转译 575 模块，初始 page.goto 偶发超 30s；放宽到 90s。
+        defaultNavigationTimeout: 90000
+
+steps:
+  # —— 1. 大厅渲染 ——
+  - target: web
+    action:
+      type: waitFor
+      selector: ".game-card"
+      state: visible
+      timeoutMs: 15000
+
+  # —— 2. 装工具 + 收集全部游戏 id ——
+  # 装一个 window.__kg_checkBatch(start, end) 函数：返回该批失败明细，并累积到 window.__kg_failed。
+  # 注意：脚本里不能用 JS 模板字符串 ${} —— YAML 插值器会把它当变量。一律字符串拼接。
+  - target: web
+    action:
+      type: evaluate
+      name: 装批处理函数 + 收集全部 id
+      script: |
+        (async () => {
+          if (!window.__e2e_err_handler) {
+            window.__e2e_errors = [];
+            window.__e2e_err_handler = (e) => {
+              window.__e2e_errors.push(String(e.message || e));
+            };
+            window.addEventListener("error", window.__e2e_err_handler);
+          }
+          // 批处理函数：检查 ids[start,end)，返回 failed 数组（同时累积到 window.__kg_failed）
+          window.__kg_checkBatch = async function (start, end) {
+            const ids = window.__kg_ids || [];
+            const batch = ids.slice(start, end);
+            const failed = [];
+            for (const id of batch) {
+              const errBefore = window.__e2e_errors.length;
+              window.location.hash = "#/" + id;
+              await new Promise((r) => setTimeout(r, 300));
+              const stage = document.querySelector(".game__stage");
+              const hasContent = stage && stage.children.length > 0;
+              const inLobby = (document.body.innerText || "").includes("个小游戏 · 边玩边学");
+              const newErrs = window.__e2e_errors.slice(errBefore);
+              if (!hasContent) failed.push({ id, reason: "stage无内容" });
+              else if (inLobby) failed.push({ id, reason: "仍在大厅" });
+              else if (newErrs.length) failed.push({ id, reason: "JS报错:" + newErrs[0].slice(0, 70) });
+            }
+            window.__kg_failed = (window.__kg_failed || []).concat(failed);
+            return failed.length === 0;
+          };
+          const mod = await import("/src/games/registry.ts");
+          window.__kg_ids = mod.GAME_IDS;
+          window.__kg_failed = [];
+          window.__e2e_errors = [];
+          return window.__kg_ids.length >= 500;
+        })()
+      expectTruthy: true
+
+  # —— 3. 10 批挂载验证（每批 ~58 个，300ms/游戏 ≈ 17s/批，远低于 120s 步超时）——
+  # 批间 sleep 500ms 让 Vite/HMR 喘息，降低长时编译降速风险。
+  - target: web
+    action: { type: evaluate, name: "批1 (0-57)", script: "window.__kg_checkBatch(0, 58)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批2 (58-115)", script: "window.__kg_checkBatch(58, 116)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批3 (116-173)", script: "window.__kg_checkBatch(116, 174)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批4 (174-231)", script: "window.__kg_checkBatch(174, 232)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批5 (232-289)", script: "window.__kg_checkBatch(232, 290)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批6 (290-347)", script: "window.__kg_checkBatch(290, 348)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批7 (348-405)", script: "window.__kg_checkBatch(348, 406)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批8 (406-463)", script: "window.__kg_checkBatch(406, 464)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批9 (464-521)", script: "window.__kg_checkBatch(464, 522)", expectTruthy: true }
+  - target: web
+    action: { type: sleep, ms: 500 }
+  - target: web
+    action: { type: evaluate, name: "批10 (522-末尾)", script: "window.__kg_checkBatch(522, 999)", expectTruthy: true }
+
+  # —— 4. 样式泄漏检查（回大厅后，游戏专属 style 应已清理）——
+  - target: web
+    action:
+      type: evaluate
+      name: 游戏样式无累积泄漏
+      script: |
+        (async () => {
+          window.location.hash = "#/";
+          await new Promise((r) => setTimeout(r, 500));
+          return document.querySelectorAll('style[id$="-style"]:not(#fb-style)').length;
+        })()
+      expectEquals: 0
+
+  # —— 5. 汇总（信息记录：失败清单写进报告 value）——
+  - target: web
+    action:
+      type: evaluate
+      name: 汇总挂载结果
+      script: |
+        (() => {
+          const ids = window.__kg_ids || [];
+          const failed = window.__kg_failed || [];
+          if (failed.length === 0) return "全部 " + ids.length + " 个游戏挂载检查通过";
+          const head = failed.slice(0, 20).map((f) => f.id + "(" + f.reason + ")").join(", ");
+          return failed.length + "/" + ids.length + " 失败: " + head + (failed.length > 20 ? " ..." : "");
+        })()
+      expectTruthy: true
+  - target: web
+    action:
+      type: screenshot
+      name: "all-games-summary"

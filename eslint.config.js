@@ -6,7 +6,15 @@ import prettierConfig from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["node_modules/", "dist/", ".git/", "*.log"],
+    ignores: [
+      "node_modules/",
+      "dist/",
+      ".git/",
+      "*.log",
+      "e2e/",
+      "_drivers.js",
+      "_testharness.js",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

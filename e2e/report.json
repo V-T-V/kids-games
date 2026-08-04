@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "total": 368,
+    "pass": 368,
+    "warn": 0,
+    "fail": 0,
+    "passRate": "100.0%"
+  },
+  "performance": {
+    "avgLoadMs": 2126,
+    "minLoadMs": 2105,
+    "maxLoadMs": 2187,
+    "slowGames": []
+  },
+  "quality": {
+    "emptyStageGames": [],
+    "canvasGames": 20,
+    "gamesWithWarnings": 0
+  },
+  "failures": [],
+  "warnings": []
+}

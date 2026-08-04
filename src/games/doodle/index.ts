@@ -52,10 +52,14 @@ export class DoodleGame extends BaseGame {
 
     this.canvas = document.createElement("canvas");
     this.canvas.className = "dd-canvas";
+    const dpr = window.devicePixelRatio || 1;
     const W = Math.min(440, window.innerWidth - 40);
-    this.canvas.width = W;
-    this.canvas.height = 320;
+    this.canvas.width = W * dpr;
+    this.canvas.height = 320 * dpr;
+    this.canvas.style.width = `${W}px`;
+    this.canvas.style.height = "320px";
     this.c2d = this.canvas.getContext("2d")!;
+    this.c2d.scale(dpr, dpr);
     this.c2d.lineCap = "round";
     this.c2d.lineJoin = "round";
     this.c2d.fillStyle = "#ffffff";

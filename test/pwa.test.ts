@@ -5,11 +5,11 @@ import { join } from "node:path";
 
 const root = process.cwd();
 
-test("pwa: index 声明 manifest、主题色与 81 游戏标题", () => {
+test("pwa: index 声明 manifest、主题色与游戏标题", () => {
   const html = readFileSync(join(root, "index.html"), "utf8");
   assert.match(html, /manifest\.webmanifest/);
   assert.match(html, /theme-color/);
-  assert.match(html, /81 个小游戏/);
+  assert.match(html, /\d+ 个小游戏/);
 });
 
 test("pwa: manifest 可安装且指向离线图标", () => {

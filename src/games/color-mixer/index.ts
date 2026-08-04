@@ -37,7 +37,8 @@ export class ColorMixerGame extends BaseGame {
   private currentHex = "#ffffff";
   private target: RGB = fromHex("#ff8c1a");
   private targetHex = "#ff8c1a";
-  private matchedCount = 0;
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbind: (() => void) | null = null;
   private beaker!: HTMLDivElement;
   private currentDot!: HTMLDivElement;
@@ -46,6 +47,8 @@ export class ColorMixerGame extends BaseGame {
   private restShieldPause = false;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.root.classList.add("cm-root");
     this.nextTarget();
     this.render();
@@ -58,6 +61,7 @@ export class ColorMixerGame extends BaseGame {
 
   private render(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
 
     const wrap = document.createElement("div");
     wrap.className = "cm-wrap";
@@ -65,7 +69,7 @@ export class ColorMixerGame extends BaseGame {
     /* —— 目标色展示 —— */
     const task = document.createElement("div");
     task.className = "cm-task";
-    task.innerHTML = `<div class="cm-task__label">调出这个颜色 👇</div>`;
+    task.innerHTML = `<div class="cm-task__label">调出这个颜色 👇 <small>（第 ${this.roundsDone + 1}/${this.roundTotal} 关）</small></div>`;
     const targetBox = document.createElement("div");
     targetBox.className = "cm-target";
     this.targetDot = document.createElement("div");
@@ -187,18 +191,18 @@ export class ColorMixerGame extends BaseGame {
       return;
     }
     if (isMatch(fromHex(this.currentHex), this.target)) {
-      this.matchedCount += 1;
+      this.roundsDone += 1;
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
       const colorName = nameOf(fromHex(this.currentHex));
       this.hint.textContent = `太棒了！你调出了${colorName}！🌟`;
       // 成就：调出 5 种目标色
-      if (this.matchedCount >= 5) {
+      if (this.roundsDone >= this.roundTotal) {
         this.unlock("color-artist");
       }
       // 连续答对清零护盾计数
       this.resetWrongStreak();
-      // 短暂展示后进入下一题；第 3 题后通关
-      const reached = this.matchedCount >= this.clearTarget();
+      // 短暂展示后进入下一题；roundTotal 题后通关
+      const reached = this.roundsDone >= this.roundTotal;
       this.trackTimeout(() => {
         if (reached) {
           this.finishClear(starsByAccuracy(this.wrongCount));
@@ -215,14 +219,6 @@ export class ColorMixerGame extends BaseGame {
         this.showRest();
       }
     }
-  }
-
-  private clearTarget(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
   }
 
   private showRest(): void {

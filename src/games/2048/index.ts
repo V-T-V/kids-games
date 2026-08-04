@@ -34,6 +34,8 @@ export class Game2048 extends BaseGame {
   private target = 32;
   private moves = 0;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
   private won = false;
   private gridEl!: HTMLDivElement;
   private onKey: ((e: KeyboardEvent) => void) | null = null;
@@ -43,6 +45,9 @@ export class Game2048 extends BaseGame {
     this.target =
       this.difficulty === "easy" ? 32 : this.difficulty === "medium" ? 64 : 128;
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.setup();
   }
   protected unmount(): void {
@@ -55,6 +60,7 @@ export class Game2048 extends BaseGame {
 
   private setup(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.over = false;
     this.won = false;
     this.moves = 0;
@@ -185,7 +191,16 @@ export class Game2048 extends BaseGame {
           this.moves,
           limits[this.difficulty] ?? [80, 160],
         );
-        this.trackTimeout(() => this.finishClear(stars), 600);
+        this.resetWrongStreak();
+        this.roundsDone += 1;
+        this.reportProgress(this.roundsDone, this.roundTotal);
+        this.trackTimeout(() => {
+          if (this.roundsDone >= this.roundTotal) {
+            this.finishClear(stars);
+          } else {
+            this.setup();
+          }
+        }, 600);
         return;
       }
       // 检查无解

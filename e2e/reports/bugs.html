@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E2E Fusion 缺陷台账</title>
+<style>
+  :root{color-scheme:light}*{box-sizing:border-box}
+  body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;margin:32px;color:#172033;background:#f8fafc}
+  h1{margin:0 0 6px;font-size:26px}.subtitle{margin:0;color:#64748b}
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0 14px}.summary-card{min-width:164px;padding:14px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;box-shadow:0 1px 2px #0f172a0d}
+  .summary-count{display:block;font-size:30px;font-weight:800;line-height:1.1}.summary-label{display:block;margin-top:4px;font-size:13px;font-weight:700;color:#475569}
+  .summary-blocker{border-left:7px solid #dc2626}.summary-blocker .summary-count{color:#b91c1c}.summary-major{border-left:7px solid #f97316}.summary-major .summary-count{color:#c2410c}.summary-minor{border-left:7px solid #2563eb}.summary-minor .summary-count{color:#1d4ed8}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px;font-size:13px;color:#475569}.legend-item{display:inline-flex;align-items:center;gap:6px}
+  .severity,.status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;line-height:1.2;white-space:nowrap}.severity i{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 0 2px #fff}
+  .severity-blocker{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}.severity-major{background:#ffedd5;color:#c2410c;border:1px solid #fed7aa}.severity-minor{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+  .status-open{background:#fef2f2;color:#b91c1c}.status-retest-passed{background:#dcfce7;color:#166534}
+  table{border-collapse:separate;border-spacing:0;width:100%;margin:16px 0;background:#fff;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px #0f172a0d}th,td{border-bottom:1px solid #e2e8f0;padding:12px 10px;text-align:left;vertical-align:top}th{background:#f1f5f9;color:#475569;font-size:12px;letter-spacing:.03em}tr:last-child td{border-bottom:0}
+  .bug-id{font-weight:800;font-variant-numeric:tabular-nums}.severity-cell{min-width:142px}.severity-row-blocker td:first-child{border-left:7px solid #dc2626}.severity-row-major td:first-child{border-left:7px solid #f97316}.severity-row-minor td:first-child{border-left:7px solid #2563eb}.severity-row-blocker{background:#fff7f7}.severity-row-major{background:#fffaf5}.severity-row-minor{background:#f7fbff}.severity-row:hover{filter:brightness(.985)}.evidence{min-width:260px;line-height:1.5;color:#334155}.evidence-files{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12px;color:#64748b}.evidence-link,.evidence-path{display:inline-block;border-radius:6px;padding:3px 6px;font-family:ui-monospace,Consolas,monospace;overflow-wrap:anywhere}.evidence-link{color:#1d4ed8;background:#dbeafe;text-decoration:none}.evidence-link:hover{text-decoration:underline}.evidence-path{color:#475569;background:#e2e8f0}
+  @media(max-width:760px){body{margin:18px}table{display:block;overflow-x:auto}.summary-card{min-width:130px}}
+</style>
+<h1>E2E Fusion 自动缺陷台账</h1>
+<p class="subtitle">严重程度以颜色、图标和文字三重标识：红色为阻断、橙色为重要、蓝色为一般。</p>
+<section class="summary" aria-label="缺陷严重程度汇总">
+  <div class="summary-card summary-blocker"><span class="summary-count">1</span><span class="summary-label">红色 · 阻断（Blocker）</span></div>
+  <div class="summary-card summary-major"><span class="summary-count">30</span><span class="summary-label">橙色 · 重要（Major）</span></div>
+  <div class="summary-card summary-minor"><span class="summary-count">1</span><span class="summary-label">蓝色 · 一般（Minor）</span></div>
+</section>
+<div class="legend"><span class="legend-item"><span class="severity severity-blocker"><i aria-hidden="true"></i>阻断 Blocker</span>核心流程或环境不可用，需优先处理</span><span class="legend-item"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span>关键功能受影响</span><span class="legend-item"><span class="severity severity-minor"><i aria-hidden="true"></i>一般 Minor</span>不阻断主流程</span></div>
+<p class="subtitle">自动记录失败；“复测通过”仅表示自动复测成功，仍待人工确认关闭。</p>
+<table><thead><tr><th>ID</th><th>状态</th><th>严重程度</th><th>归因</th><th>用例</th><th>出现次数</th><th>最新证据</th></tr></thead><tbody>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-05556F6EB7</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>step#20 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-1129EE332E</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>step#21 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-AD440AC1FD</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>step#22 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-AF19824734</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>step#6 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-B42BF273CE</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#4 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-3447A22FB0</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#8 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-DFC7461163</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#10 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-6A0B8978D5</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#12 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-E31703C33D</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#14 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-5A5B7CDB89</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#16 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-0F3ED655BA</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#18 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-1F98549CD6</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>运行超时 (1500000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-AAB1D7E50A</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6100ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-2A0C807CE1</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6323ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-A4F5FCFE09</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>运行超时 (600000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-B95736603C</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6498ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-9F8327770A</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6291ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-57B36E2804</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>启动失败后的 driver 清理失败：startup driver shutdown超时 (7500ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-blocker">
+      <td class="bug-id">BUG-EBFB878605</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-blocker"><span class="severity severity-blocker"><i aria-hidden="true"></i>阻断 Blocker</span></td>
+      <td>环境问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver shutdown 总预算已耗尽</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-CB95E251FD</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>page.goto: Timeout 30000ms exceeded. Call log: [2m - navigating to &quot;http://127.0.0.1:3149/&quot;, waiting until &quot;load&quot;[22m</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-7842C65776</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>page.goto: Timeout 30000ms exceeded. Call log: [2m - navigating to &quot;http://127.0.0.1:6912/&quot;, waiting until &quot;load&quot;[22m</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-6B5E1FEC7E</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6368ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-minor">
+      <td class="bug-id">BUG-B58C8155AD</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-minor"><span class="severity severity-minor"><i aria-hidden="true"></i>一般 Minor</span></td>
+      <td>未知问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>2</td>
+      <td class="evidence"><div>步骤异常: 步骤 #8 action 包含未解析变量：$.script</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-ED240AC3CD</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#7 evaluate @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-22410168B8</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#9 screenshot @web超时 (120000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-2D4B6330CC</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6367ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-32702070F3</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6433ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-C80E83BD72</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#6 evaluate @web超时 (60000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-49B008C13F</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#7 evaluate @web超时 (60000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-ABBB7738B9</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>step#9 screenshot @web超时 (60000ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-531B848239</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-02-all-games-mount</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6504ms)</div></td>
+    </tr>
+    <tr class="severity-row severity-row-major">
+      <td class="bug-id">BUG-BA041A879E</td>
+      <td><span class="status status-open">待处理</span></td>
+      <td class="severity-cell severity-cell-major"><span class="severity severity-major"><i aria-hidden="true"></i>重要 Major</span></td>
+      <td>性能问题</td>
+      <td>kids-games-01-lobby-and-games</td>
+      <td>1</td>
+      <td class="evidence"><div>driver shutdown 失败：driver web shutdown超时 (6408ms)</div></td>
+    </tr></tbody></table>
+</html>

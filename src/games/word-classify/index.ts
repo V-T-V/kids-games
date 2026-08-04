@@ -35,10 +35,14 @@ export class WordClassifyGame extends BaseGame {
   constructor() {
     super("word-classify");
   }
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbinds: (() => void)[] = [];
   private remaining = 0;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -49,10 +53,12 @@ export class WordClassifyGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
+    this.unbinds.forEach((u) => u());
     this.unbinds = [];
     // 难度决定类别数与每类词数
     const catN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const per =
       this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 2 : 3;
     const cats = shuffle(CATEGORIES).slice(0, catN);
@@ -65,21 +71,21 @@ export class WordClassifyGame extends BaseGame {
     this.remaining = allTokens.length;
 
     const wrap = document.createElement("div");
-    wrap.className = "wc-wrap";
+    wrap.className = "wclf-wrap";
 
     const task = document.createElement("div");
-    task.className = "wc-task";
-    task.textContent = "把词拖进对应的篮子里～";
+    task.className = "wclf-task";
+    task.innerHTML = `把词拖进对应的篮子里～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     // 词语区
     const tray = document.createElement("div");
-    tray.className = "wc-tray";
-    tray.id = "wc-tray";
+    tray.className = "wclf-tray";
+    tray.id = "wclf-tray";
     const tokens: Token[] = [];
     shuffle(allTokens).forEach((t) => {
       const el = document.createElement("div");
-      el.className = "wc-token";
+      el.className = "wclf-token";
       el.textContent = t.word;
       tray.appendChild(el);
       tokens.push({ ...t, el, placed: false });
@@ -88,13 +94,13 @@ export class WordClassifyGame extends BaseGame {
 
     // 类别篮子
     const bins = document.createElement("div");
-    bins.className = "wc-bins";
+    bins.className = "wclf-bins";
     const binEls: HTMLDivElement[] = [];
     cats.forEach((c) => {
       const el = document.createElement("div");
-      el.className = "wc-bin";
+      el.className = "wclf-bin";
       el.dataset.id = c.id;
-      el.innerHTML = `<div class="wc-bin__emoji">${c.emoji}</div><div class="wc-bin__name">${c.name}</div>`;
+      el.innerHTML = `<div class="wclf-bin__emoji">${c.emoji}</div><div class="wclf-bin__name">${c.name}</div>`;
       bins.appendChild(el);
       binEls.push(el);
     });
@@ -117,7 +123,7 @@ export class WordClassifyGame extends BaseGame {
         ox = p.x - r.left;
         oy = p.y - r.top;
         origin = t.el.parentElement;
-        t.el.classList.add("wc-token--drag");
+        t.el.classList.add("wclf-token--drag");
         t.el.style.position = "fixed";
         t.el.style.left = `${p.x - ox}px`;
         t.el.style.top = `${p.y - oy}px`;
@@ -133,7 +139,7 @@ export class WordClassifyGame extends BaseGame {
       up: (p) => {
         if (!dragging) return;
         dragging = false;
-        t.el.classList.remove("wc-token--drag");
+        t.el.classList.remove("wclf-token--drag");
         const bin = bins.find((b) => {
           const r = b.getBoundingClientRect();
           return (
@@ -145,10 +151,10 @@ export class WordClassifyGame extends BaseGame {
           t.el.style.position = "";
           t.el.style.left = "";
           t.el.style.top = "";
-          t.el.classList.add("wc-token--in");
+          t.el.classList.add("wclf-token--in");
           // 放入篮子内（移除 grid 大小，缩小堆叠）
           const inner = document.createElement("div");
-          inner.className = "wc-bin__token";
+          inner.className = "wclf-bin__token";
           inner.textContent = t.word;
           t.el.remove();
           bin.appendChild(inner);
@@ -157,10 +163,14 @@ export class WordClassifyGame extends BaseGame {
           this.onCorrect(r.left + r.width / 2, r.top);
           this.resetWrongStreak();
           if (this.remaining <= 0) {
-            this.trackTimeout(
-              () => this.finishClear(starsByAccuracy(this.wrongCount)),
-              900,
-            );
+            this.trackTimeout(() => {
+              this.roundsDone += 1;
+              if (this.roundsDone >= this.roundTotal) {
+                this.finishClear(starsByAccuracy(this.wrongCount));
+              } else {
+                this.startRound();
+              }
+            }, 900);
           }
         } else {
           t.el.style.position = "";
@@ -195,9 +205,9 @@ export class WordClassifyGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("wc-style")) return;
+    if (document.getElementById("wclf-style")) return;
     const st = document.createElement("style");
-    st.id = "wc-style";
+    st.id = "wclf-style";
     st.textContent = WC_CSS(getCssVar("--c-teal"));
     document.head.appendChild(st);
   }
@@ -205,18 +215,18 @@ export class WordClassifyGame extends BaseGame {
 
 function WC_CSS(theme: string): string {
   return `
-.wc-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;width:min(520px,100%);}
-.wc-task{font-size:1.1rem;font-weight:800;text-align:center;}
-.wc-tray{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;min-height:64px;padding:14px;background:rgba(255,255,255,.5);border-radius:16px;width:100%;max-width:420px;}
-.wc-token{min-width:64px;height:54px;padding:0 14px;border-radius:14px;background:${theme};color:#fff;font-size:1.3rem;font-weight:800;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;font-family:'KaiTi','STKaiti',serif;user-select:none;}
-.wc-token--drag{cursor:grabbing;transform:scale(1.12);z-index:100;}
-.wc-token--in{opacity:0;}
-.wc-bins{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
-.wc-bin{width:120px;min-height:130px;padding:10px 8px;border-radius:20px;background:color-mix(in srgb,${theme} 16%,#fff);border:3px solid ${theme};display:flex;flex-direction:column;align-items:center;gap:6px;}
-.wc-bin__emoji{font-size:2.2rem;}
-.wc-bin__name{font-size:.9rem;font-weight:800;color:${theme};}
-.wc-bin__token{font-size:1rem;font-weight:700;background:#fff;color:var(--ink);padding:3px 10px;border-radius:10px;box-shadow:var(--shadow);animation:wc-drop .4s ease;font-family:'KaiTi','STKaiti',serif;}
-@keyframes wc-drop{0%{transform:translateY(-12px) scale(.7);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+.wclf-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;width:min(520px,100%);}
+.wclf-task{font-size:1.1rem;font-weight:800;text-align:center;}
+.wclf-tray{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;min-height:64px;padding:14px;background:rgba(255,255,255,.5);border-radius:16px;width:100%;max-width:420px;}
+.wclf-token{min-width:64px;height:54px;padding:0 14px;border-radius:14px;background:${theme};color:#fff;font-size:1.3rem;font-weight:800;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;font-family:'KaiTi','STKaiti',serif;user-select:none;}
+.wclf-token--drag{cursor:grabbing;transform:scale(1.12);z-index:100;}
+.wclf-token--in{opacity:0;}
+.wclf-bins{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+.wclf-bin{width:120px;min-height:130px;padding:10px 8px;border-radius:20px;background:color-mix(in srgb,${theme} 16%,#fff);border:3px solid ${theme};display:flex;flex-direction:column;align-items:center;gap:6px;}
+.wclf-bin__emoji{font-size:2.2rem;}
+.wclf-bin__name{font-size:.9rem;font-weight:800;color:${theme};}
+.wclf-bin__token{font-size:1rem;font-weight:700;background:#fff;color:var(--ink);padding:3px 10px;border-radius:10px;box-shadow:var(--shadow);animation:wclf-drop .4s ease;font-family:'KaiTi','STKaiti',serif;}
+@keyframes wclf-drop{0%{transform:translateY(-12px) scale(.7);opacity:0}60%{transform:translateY(2px) scale(1.1);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
 `;
 }
 

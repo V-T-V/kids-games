@@ -8,8 +8,16 @@ export default defineConfig({
   build: {
     outDir: "dist",
     target: "es2020",
-    // 儿童游戏不强求分包，保持简单
     chunkSizeWarningLimit: 1500,
+    // 把 registry（368个游戏元信息 ~55KB）拆为独立 chunk，
+    // 让首屏主 JS 从 134KB 减到 ~75KB，浏览器并行下载。
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("registry.ts")) return "registry";
+        },
+      },
+    },
   },
   server: {
     port: 5190,

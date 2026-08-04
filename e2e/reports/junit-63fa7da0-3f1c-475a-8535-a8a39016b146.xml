@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kids-games-01-lobby-and-games" tests="6" failures="1" time="55.07">
+    <testcase classname="kids-games-01-lobby-and-games" name="web:waitFor" time="0"/>
+    <testcase classname="kids-games-01-lobby-and-games" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-01-lobby-and-games" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-01-lobby-and-games" name="web:screenshot" time="0"/>
+    <testcase classname="kids-games-01-lobby-and-games" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-01-lobby-and-games" name="web:driver.shutdown" time="0"
+      <failure message="driver shutdown 失败：driver web shutdown超时 (6408ms)"/>/>
+</testsuite>

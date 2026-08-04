@@ -6,6 +6,7 @@ import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { burst } from "../../core/particles.ts";
 import { bindPointer } from "../../core/input.ts";
+import { createRafLoop } from "../../core/loop.ts";
 import { getCssVar, randInt, sample } from "../../lobby/util.ts";
 
 const FRUITS = ["🍎", "🍌", "🍇", "🍓", "🍒", "🥝", "🍑"] as const;
@@ -28,24 +29,31 @@ export class FruitCatchGame extends BaseGame {
   private items: Falling[] = [];
   private score = 0;
   private lives = 3;
-  private raf = 0;
+  private stop?: () => void;
   private lastSpawn = 0;
   private spawnGap = 900;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbind: (() => void) | null = null;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startGame();
   }
   protected unmount(): void {
-    cancelAnimationFrame(this.raf);
+    this.stop?.();
+    this.stop = undefined;
     this.unbind?.();
     this.unbind = null;
   }
 
   private startGame(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.score = 0;
     this.lives = 3;
     this.over = false;
@@ -79,7 +87,7 @@ export class FruitCatchGame extends BaseGame {
     });
 
     this.lastSpawn = performance.now();
-    this.loop();
+    this.stop = createRafLoop(() => this.tick());
   }
 
   private moveBasket(p: { x: number; y: number }): void {
@@ -88,8 +96,12 @@ export class FruitCatchGame extends BaseGame {
     this.basket.style.left = `${x}px`;
   }
 
-  private loop = (): void => {
-    if (this.over) return;
+  private tick = (): void => {
+    if (this.over) {
+      this.stop?.();
+      this.stop = undefined;
+      return;
+    }
     const now = performance.now();
     if (now - this.lastSpawn > this.spawnGap) {
       this.spawn();
@@ -120,7 +132,6 @@ export class FruitCatchGame extends BaseGame {
         this.items.splice(i, 1);
       }
     }
-    this.raf = requestAnimationFrame(this.loop);
   };
 
   private spawn(): void {
@@ -167,9 +178,19 @@ export class FruitCatchGame extends BaseGame {
 
   private end(): void {
     this.over = true;
-    cancelAnimationFrame(this.raf);
+    this.stop?.();
+    this.stop = undefined;
     const stars = this.score >= 20 ? 3 : this.score >= 10 ? 2 : 1;
-    this.finishClear(stars);
+    this.resetWrongStreak();
+    this.roundsDone += 1;
+    this.reportProgress(this.roundsDone, this.roundTotal);
+    this.trackTimeout(() => {
+      if (this.roundsDone >= this.roundTotal) {
+        this.finishClear(stars);
+      } else {
+        this.startGame();
+      }
+    }, 600);
   }
 
   private injectStyle(): void {
@@ -183,11 +204,14 @@ export class FruitCatchGame extends BaseGame {
 
 function FC_CSS(_theme: string): string {
   return `
-.fc-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(440px,100%);}
-.fc-bar{display:flex;gap:24px;font-size:1.3rem;font-weight:800;background:#fff;padding:8px 24px;border-radius:999px;box-shadow:var(--shadow);}
-.fc-field{position:relative;width:100%;height:60vh;min-height:340px;background:linear-gradient(180deg,#b3e5fc,#e8f5e9);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);touch-action:none;cursor:none;}
-.fc-basket{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:2.8rem;transition:left .08s linear;z-index:5;}
-.fc-fruit{position:absolute;font-size:2rem;will-change:top;}
+.fc-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;width:min(440px,100%);}
+.fc-bar{display:flex;gap:28px;font-size:1.4rem;font-weight:800;background:linear-gradient(180deg,#fff,#eaf6e8);padding:10px 28px;border-radius:999px;box-shadow:var(--shadow);border:2px solid #bce0b0;}
+.fc-field{position:relative;width:100%;height:60vh;min-height:340px;background:linear-gradient(180deg,#7ec8f0 0%,#aee4ff 22%,#cfe8a8 42%,#a6d57a 68%,#88b058 100%);border-radius:24px;overflow:hidden;box-shadow:var(--shadow),inset 0 0 0 3px rgba(255,255,255,.4);touch-action:none;cursor:none;}
+.fc-field::before{content:"🌳🍎🌳🍊🌳";position:absolute;top:8px;left:0;right:0;font-size:1.6rem;letter-spacing:6px;opacity:.5;z-index:1;pointer-events:none;}
+.fc-field::after{content:"🌳🍒🌳🍇🌳";position:absolute;top:30px;left:0;right:0;font-size:1.4rem;letter-spacing:6px;opacity:.4;z-index:1;pointer-events:none;}
+.fc-basket{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:3.6rem;transition:left .08s linear;z-index:5;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35));}
+.fc-fruit{position:absolute;font-size:2.4rem;will-change:top;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3));}
+.fc-fruit::after{content:"";position:absolute;left:50%;top:-120px;width:2px;height:116px;transform:translateX(-50%);background:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 6px,transparent 6px 12px);pointer-events:none;}
 `;
 }
 

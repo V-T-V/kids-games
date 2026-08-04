@@ -1,0 +1,106 @@
+{
+  "runId": "0885a97e-68ff-4bb7-a063-abb28abd306b",
+  "caseName": "kids-games-02-all-games-mount",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "failed",
+  "startedAt": 1785681076440,
+  "endedAt": 1785681121091,
+  "durationMs": 44651,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 100000,
+      "target": "startup",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "启动失败后的 driver 清理失败：startup driver shutdown超时 (7500ms)"
+    },
+    {
+      "index": 1,
+      "stepGroup": 100001,
+      "target": "frontend",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "driver shutdown 失败：driver shutdown 总预算已耗尽"
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "trace",
+      "target": "web",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\web-x-1ddf6e88.trace.zip",
+      "label": "Playwright Web trace",
+      "contentType": "application/zip",
+      "id": "48590755-db37-44e9-a7b9-00263b16a9c7",
+      "createdAt": 1785681113928
+    },
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m2766\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m6780\u001b[22m/\u001b[39m\n",
+      "id": "a52cf9cf-3331-4d06-948f-c0dfc68e035d",
+      "createdAt": 1785681121090
+    },
+    {
+      "id": "report-3",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-0885a97e-68ff-4bb7-a063-abb28abd306b.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785681121233
+    },
+    {
+      "id": "report-4",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-0885a97e-68ff-4bb7-a063-abb28abd306b.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785681121251
+    },
+    {
+      "id": "report-5",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-0885a97e-68ff-4bb7-a063-abb28abd306b.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785681121268
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785681121277
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785681121282
+    }
+  ],
+  "comparisons": [],
+  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:6780/\", waiting until \"load\"\u001b[22m\n",
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "8ec418c46ee71a3f776e9c970615b6d188d5560d2750b2279fcc40e9d738483b",
+    "projectSuite": "smoke"
+  }
+}

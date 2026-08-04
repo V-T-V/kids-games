@@ -29,7 +29,7 @@ export class WeightSortGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -38,16 +38,13 @@ export class WeightSortGame extends BaseGame {
   }
 
   private count(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
     this.root.innerHTML = "";
     this.expected = 1;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.picked = shuffle(ANIMALS)
       .slice(0, this.count())
       .sort((a, b) => a.w - b.w);

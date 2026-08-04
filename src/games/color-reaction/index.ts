@@ -42,7 +42,7 @@ export class ColorReactionGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -59,14 +59,14 @@ export class ColorReactionGame extends BaseGame {
     const target = sample(picked);
 
     const wrap = document.createElement("div");
-    wrap.className = "cr-wrap";
+    wrap.className = "crt-wrap";
     const task = document.createElement("div");
-    task.className = "cr-task";
+    task.className = "crt-task";
     task.innerHTML = `点击 <span style="color:${target.hex};text-shadow:0 1px 2px rgba(0,0,0,.2)">${target.name}</span> 的方块`;
     wrap.appendChild(task);
 
     const player = document.createElement("div");
-    player.className = "cr-player";
+    player.className = "crt-player";
     player.appendChild(
       createButton({
         text: "再听一遍",
@@ -78,15 +78,15 @@ export class ColorReactionGame extends BaseGame {
     wrap.appendChild(player);
 
     const grid = document.createElement("div");
-    grid.className = "cr-grid";
+    grid.className = "crt-grid";
     shuffle(picked).forEach((c) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "cr-block";
+      b.className = "crt-block";
       b.style.background = c.hex;
       b.addEventListener("click", () => {
         if (c.name === target.name) {
-          b.classList.add("cr-block--done");
+          b.classList.add("crt-block--done");
           sfxPop();
           const r = b.getBoundingClientRect();
           this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
@@ -98,9 +98,9 @@ export class ColorReactionGame extends BaseGame {
             else this.startRound();
           }, 900);
         } else {
-          b.classList.add("cr-block--wrong");
+          b.classList.add("crt-block--wrong");
           const paused = this.onWrong();
-          this.trackTimeout(() => b.classList.remove("cr-block--wrong"), 400);
+          this.trackTimeout(() => b.classList.remove("crt-block--wrong"), 400);
           if (paused) this.showRest();
         }
       });
@@ -131,9 +131,9 @@ export class ColorReactionGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("cr-style")) return;
+    if (document.getElementById("crt-style")) return;
     const st = document.createElement("style");
-    st.id = "cr-style";
+    st.id = "crt-style";
     st.textContent = CR_CSS(getCssVar("--c-pink"));
     document.head.appendChild(st);
   }
@@ -141,15 +141,15 @@ export class ColorReactionGame extends BaseGame {
 
 function CR_CSS(_theme: string): string {
   return `
-.cr-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:min(440px,100%);}
-.cr-task{font-size:1.3rem;font-weight:800;text-align:center;}
-.cr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-.cr-block{width:78px;height:78px;border-radius:18px;box-shadow:var(--shadow);}
-.cr-block:active{transform:scale(.92);}
-.cr-block--done{outline:5px solid #fff;outline-offset:3px;animation:cr-pop .4s ease;}
-.cr-block--wrong{animation:cr-shake .4s ease;}
-@keyframes cr-pop{0%{transform:scale(.7)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
-@keyframes cr-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.crt-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:min(440px,100%);}
+.crt-task{font-size:1.3rem;font-weight:800;text-align:center;}
+.crt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.crt-block{width:78px;height:78px;border-radius:18px;box-shadow:var(--shadow);}
+.crt-block:active{transform:scale(.92);}
+.crt-block--done{outline:5px solid #fff;outline-offset:3px;animation:crt-pop .4s ease;}
+.crt-block--wrong{animation:crt-shake .4s ease;}
+@keyframes crt-pop{0%{transform:scale(.7)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes crt-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 `;
 }
 

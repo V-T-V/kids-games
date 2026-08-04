@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kids-games-02-all-games-mount" tests="1" failures="1" time="43.61">
+    <testcase classname="kids-games-02-all-games-mount" name="run-level-error" time="0"><failure message="page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to &quot;http://127.0.0.1:1739/&quot;, waiting until &quot;load&quot;[22m
+"/></testcase>
+</testsuite>

@@ -10,6 +10,8 @@ export class MiniSudokuGame extends BaseGame {
   constructor() {
     super("mini-sudoku");
   }
+  private roundTotal = 0;
+  private roundsDone = 0;
   private n = 3;
   private syms: string[] = [];
   private solution: string[] = [];
@@ -19,6 +21,8 @@ export class MiniSudokuGame extends BaseGame {
   protected mount(): void {
     this.n =
       this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 3 : 4;
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -27,6 +31,7 @@ export class MiniSudokuGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     const EMOJI = ["🍎", "🍌", "🍇", "🍓"];
     this.syms = EMOJI.slice(0, this.n);
@@ -51,7 +56,7 @@ export class MiniSudokuGame extends BaseGame {
     wrap.className = "ms-wrap";
     const task = document.createElement("div");
     task.className = "ms-task";
-    task.textContent = "每行每列不能有重复的水果～";
+    task.innerHTML = `每一行、每一列的水果都<b>不能重复</b>～<br><span class="ms-hint">点空格换水果，把所有？填满</span>`;
     wrap.appendChild(task);
 
     const grid = document.createElement("div");
@@ -136,7 +141,11 @@ export class MiniSudokuGame extends BaseGame {
     if (filled && !conflict) {
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
       this.resetWrongStreak();
-      this.trackTimeout(() => this.finishClear(3), 700);
+      this.trackTimeout(() => {
+        this.roundsDone += 1;
+        if (this.roundsDone >= this.roundTotal) this.finishClear(3);
+        else this.startRound();
+      }, 700);
     }
   }
 
@@ -152,7 +161,8 @@ export class MiniSudokuGame extends BaseGame {
 function MS2_CSS(theme: string): string {
   return `
 .ms-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;}
-.ms-task{font-size:1.1rem;font-weight:800;}
+.ms-task{font-size:1.1rem;font-weight:800;text-align:center;line-height:1.5;}
+.ms-hint{font-size:.85rem;color:var(--ink-soft);font-weight:600;}
 .ms-grid{display:grid;grid-template-columns:repeat(var(--n,3),1fr);gap:4px;padding:8px;background:${theme};border-radius:14px;box-shadow:var(--shadow);}
 .ms-cell{width:78px;height:78px;font-size:2.2rem;border-radius:10px;border:none;background:#fff;box-shadow:var(--shadow);}
 .ms-cell:active{transform:scale(.94);}

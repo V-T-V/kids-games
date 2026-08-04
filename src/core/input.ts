@@ -24,12 +24,24 @@ export function bindPointer(
   const hasPointerEvents = typeof PointerEvent !== "undefined";
   if (hasPointerEvents) {
     const onDown = (e: PointerEvent) => {
+      // 捕获指针：确保拖出元素范围后仍能收到 move/up（解决~93个拖拽游戏的"断拖"问题）
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      el.style.touchAction = "none"; // 兜底防 iOS 滚动
       handlers.down?.({ x: e.clientX, y: e.clientY, id: e.pointerId });
     };
     const onMove = (e: PointerEvent) => {
       handlers.move?.({ x: e.clientX, y: e.clientY, id: e.pointerId });
     };
     const onUp = (e: PointerEvent) => {
+      try {
+        el.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
       handlers.up?.({ x: e.clientX, y: e.clientY, id: e.pointerId });
     };
     el.addEventListener("pointerdown", onDown);

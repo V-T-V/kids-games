@@ -12,12 +12,12 @@
     <meta name="theme-color" content="#ffd166" />
     <meta
       name="description"
-      content="为 3~6 岁儿童设计的 81 个寓教于乐网页小游戏，支持本地进度与离线安装。"
+      content="为 3~6 岁儿童设计的 575 个寓教于乐网页小游戏，支持本地进度与离线安装。"
     />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icon.svg" />
-    <title>童趣游戏屋 · 81 个小游戏</title>
+    <title>童趣游戏屋 · 575 个小游戏</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -48,6 +48,12 @@
     >
       <span class="parent-btn__icon">⚙️</span>
     </button>
+
+    <!-- 横屏引导：竖屏优先的游戏在设备横置时提示孩子转回竖屏 -->
+    <div id="rotate-hint" class="rotate-hint" aria-hidden="true">
+      <div class="rotate-hint__icon">📱</div>
+      <div class="rotate-hint__text">把手机转一转<br />竖着玩更舒服哦～</div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

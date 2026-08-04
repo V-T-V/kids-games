@@ -17,8 +17,11 @@ interface Eq {
 
 function genEquation(diff: string): Eq {
   // 生成 "? op ?" 形式，问孩子选哪个运算符使等式成立
+  // 保证 a !== b，避免 hard 难度下 a===b 时 "+" 和 "×" 结果相同导致一题多解
+  // （如 2+2=4 与 2×2=4，孩子选另一个合法运算符会被误判错）
   const a = randInt(1, 6);
-  const b = randInt(1, 6);
+  let b = randInt(1, 6);
+  while (a === b) b = randInt(1, 6);
   const ops = diff === "hard" ? ["+", "-", "×"] : ["+", "-"];
   const op = shuffle(ops)[0]!;
   let result: number;
@@ -54,11 +57,12 @@ export class EquationGame extends BaseGame {
     super("equation");
   }
   private roundsDone = 0;
+  private answered = false;
   private roundTotal = 0;
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -68,6 +72,8 @@ export class EquationGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.answered = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const eq = genEquation(this.difficulty);
 
     const wrap = document.createElement("div");
@@ -97,7 +103,9 @@ export class EquationGame extends BaseGame {
   }
 
   private choose(o: string, answer: string, btn: HTMLButtonElement): void {
+    if (this.answered) return;
     if (o === answer) {
+      this.answered = true;
       sfxPop();
       btn.classList.add("eq-opt--done");
       const r = btn.getBoundingClientRect();

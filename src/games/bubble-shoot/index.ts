@@ -54,14 +54,20 @@ export class BubbleShootGame extends BaseGame {
   private popped = 0;
   private shots = 0;
   private target = 0;
+  private colors = 0;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   protected mount(): void {
     this.target =
       this.difficulty === "easy" ? 15 : this.difficulty === "medium" ? 22 : 30;
-    const colors =
+    this.colors =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
+    this.roundTotal =
       this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.injectStyle();
-    this.setupCanvas(colors);
+    this.setupCanvas(this.colors);
   }
 
   protected unmount(): void {
@@ -73,16 +79,17 @@ export class BubbleShootGame extends BaseGame {
 
   private setupCanvas(colorCount: number): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.over = false;
     this.popped = 0;
     this.shots = 0;
 
     const wrap = document.createElement("div");
-    wrap.className = "bs-wrap";
+    wrap.className = "bsho-wrap";
 
     const task = document.createElement("div");
-    task.className = "bs-task";
-    task.innerHTML = `消除 <span id="bs-pop">0</span> / ${this.target} 个泡泡～`;
+    task.className = "bsho-task";
+    task.innerHTML = `消除 <span id="bsho-pop">0</span> / ${this.target} 个泡泡～`;
     wrap.appendChild(task);
 
     this.canvas = document.createElement("canvas");
@@ -222,7 +229,7 @@ export class BubbleShootGame extends BaseGame {
     };
     this.nextColors[0] = this.nextColors[1]!;
     this.nextColors[1] = this.pickColor(
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5,
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8,
     );
     this.shots += 1;
     this.cooldown = 6;
@@ -310,23 +317,27 @@ export class BubbleShootGame extends BaseGame {
       this.onCorrect(cx, cy);
       this.resetWrongStreak();
       // 更新计数 UI
-      const pop = this.root.querySelector("#bs-pop");
+      const pop = this.root.querySelector("#bsho-pop");
       if (pop) pop.textContent = String(this.popped);
       // 检查浮动泡泡（未连到顶部）一并消除
       this.dropFloaters();
       if (this.popped >= this.target) {
         this.over = true;
         cancelAnimationFrame(this.raf);
-        this.trackTimeout(
-          () =>
+        this.roundsDone += 1;
+        this.reportProgress(this.roundsDone, this.roundTotal);
+        this.trackTimeout(() => {
+          if (this.roundsDone >= this.roundTotal) {
             this.finishClear(
               starsByScore(this.popped, [
                 this.target,
                 Math.ceil(this.target * 0.6),
               ]),
-            ),
-          500,
-        );
+            );
+          } else {
+            this.setupCanvas(this.colors);
+          }
+        }, 500);
       }
     } else {
       // 没匹配上不算错（避免挫败），仅轻微反馈
@@ -376,7 +387,7 @@ export class BubbleShootGame extends BaseGame {
         this.popped += 1;
       }
     }
-    const pop = this.root.querySelector("#bs-pop");
+    const pop = this.root.querySelector("#bsho-pop");
     if (pop) pop.textContent = String(this.popped);
   }
 
@@ -510,9 +521,9 @@ export class BubbleShootGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("bs-style")) return;
+    if (document.getElementById("bsho-style")) return;
     const st = document.createElement("style");
-    st.id = "bs-style";
+    st.id = "bsho-style";
     st.textContent = BS_CSS(getCssVar("--c-cyan"));
     document.head.appendChild(st);
   }
@@ -520,11 +531,11 @@ export class BubbleShootGame extends BaseGame {
 
 function BS_CSS(theme: string): string {
   return `
-.bs-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
-.bs-task{font-size:1.15rem;font-weight:800;color:#3a2e4a;}
-.bs-task span{color:${theme};}
-canvas.bs-canvas, .bs-wrap canvas{border-radius:20px;background:rgba(255,255,255,.5);box-shadow:var(--shadow-lg);touch-action:none;cursor:crosshair;}
-@keyframes bs-burst{0%{transform:scale(1);opacity:1}100%{transform:scale(1.8);opacity:0}}
+.bsho-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.bsho-task{font-size:1.15rem;font-weight:800;color:#3a2e4a;}
+.bsho-task span{color:${theme};}
+canvas.bsho-canvas, .bsho-wrap canvas{border-radius:20px;background:rgba(255,255,255,.5);box-shadow:var(--shadow-lg);touch-action:none;cursor:crosshair;}
+@keyframes bsho-burst{0%{transform:scale(1);opacity:1}100%{transform:scale(1.8);opacity:0}}
 `;
 }
 

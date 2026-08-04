@@ -30,10 +30,11 @@ export class AnimalSoundGame extends BaseGame {
   }
   private roundsDone = 0;
   private roundTotal = 0;
+  private answered = false;
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -42,9 +43,11 @@ export class AnimalSoundGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.answered = false;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const n =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const picked = shuffle(ANIMALS).slice(0, n);
     const target = sample(picked);
 
@@ -92,7 +95,9 @@ export class AnimalSoundGame extends BaseGame {
   }
 
   private choose(a: Animal, target: Animal, btn: HTMLButtonElement): void {
+    if (this.answered) return;
     if (a.sound === target.sound) {
+      this.answered = true;
       sfxPop();
       btn.classList.add("as-choice--done");
       this.playSound(target.sound);

@@ -17,17 +17,29 @@ const COLOR_FALLBACK: Record<string, string> = {
   "--c-indigo": "#6366f1",
 };
 
-/** 读取 CSS 变量的计算值，失败时回退到内置调色板。 */
-export function getCssVar(name: string): string {
+/** 读取 CSS 变量的计算值，失败时回退到内置调色板。
+ *  首次调用时缓存全部 CSS 变量到内存，后续直接查 Map，
+ *  避免 368 张卡片每次渲染都触发 getComputedStyle reflow。 */
+let cssVarCache: Record<string, string> | null = null;
+
+function ensureCssVarCache(): void {
+  if (cssVarCache) return;
+  cssVarCache = {};
   try {
-    const v = getComputedStyle(document.documentElement)
-      .getPropertyValue(name)
-      .trim();
-    if (v) return v;
+    const styles = getComputedStyle(document.documentElement);
+    // 从 fallback 表的 key 列表读取（已知有限集合）
+    for (const key of Object.keys(COLOR_FALLBACK)) {
+      const v = styles.getPropertyValue(key).trim();
+      cssVarCache[key] = v || COLOR_FALLBACK[key]!;
+    }
   } catch {
-    /* ignore */
+    cssVarCache = { ...COLOR_FALLBACK };
   }
-  return COLOR_FALLBACK[name] ?? "#4d96ff";
+}
+
+export function getCssVar(name: string): string {
+  ensureCssVarCache();
+  return cssVarCache![name] ?? COLOR_FALLBACK[name] ?? "#4d96ff";
 }
 
 /** 防抖。 */

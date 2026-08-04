@@ -44,7 +44,7 @@ export class PlanetOrbitGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -65,6 +65,7 @@ export class PlanetOrbitGame extends BaseGame {
     this.busy = false; // 解除过渡锁
     cancelAnimationFrame(this.raf);
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const n = this.count();
     this.active = PLANETS.slice(0, n);
     this.angles = this.active.map(

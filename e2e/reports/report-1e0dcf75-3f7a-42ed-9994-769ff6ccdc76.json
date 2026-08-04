@@ -1,0 +1,169 @@
+{
+  "runId": "1e0dcf75-3f7a-42ed-9994-769ff6ccdc76",
+  "caseName": "kids-games-01-lobby-and-games",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "failed",
+  "startedAt": 1785683177818,
+  "endedAt": 1785683268455,
+  "durationMs": 90637,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 0,
+      "target": "web",
+      "actionType": "waitFor",
+      "status": "passed",
+      "durationMs": 3492,
+      "data": {}
+    },
+    {
+      "index": 1,
+      "stepGroup": 1,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 185,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 2,
+      "stepGroup": 2,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 130,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 3,
+      "stepGroup": 3,
+      "target": "web",
+      "actionType": "screenshot",
+      "status": "passed",
+      "durationMs": 765,
+      "data": {
+        "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-de02442d.png"
+      }
+    },
+    {
+      "index": 4,
+      "stepGroup": 4,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 10292,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 5,
+      "stepGroup": 100005,
+      "target": "web",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "driver shutdown 失败：driver web shutdown超时 (6291ms)"
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "target": "web",
+      "stepIndex": 3,
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-de02442d.png",
+      "contentType": "image/png",
+      "id": "adcb6f30-3f80-4adf-9d2f-6bc89bd6630c",
+      "createdAt": 1785683250624
+    },
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m5019\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m4245\u001b[22m/\u001b[39m\n",
+      "id": "a7ca91ed-4919-4325-8607-f084793892df",
+      "createdAt": 1785683260938
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://0",
+      "content": "[vite] connecting...",
+      "id": "ce644640-2ded-4e8f-b264-0172ae412ef4",
+      "createdAt": 1785683260941
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://1",
+      "content": "[vite] connected.",
+      "id": "cde96ffd-a0de-4d79-bf8d-dd8d2b2e0bbe",
+      "createdAt": 1785683260941
+    },
+    {
+      "id": "report-5",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-1e0dcf75-3f7a-42ed-9994-769ff6ccdc76.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785683268646
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-1e0dcf75-3f7a-42ed-9994-769ff6ccdc76.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785683268648
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-1e0dcf75-3f7a-42ed-9994-769ff6ccdc76.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785683268649
+    },
+    {
+      "id": "report-8",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785683268652
+    },
+    {
+      "id": "report-9",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785683268653
+    }
+  ],
+  "comparisons": [
+    {
+      "stepGroup": 3,
+      "byTarget": {
+        "web": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-de02442d.png"
+      }
+    }
+  ],
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "bde06956c59887276bd27dedb90311ccfdebb5e5caf0dc82e2624a95783e0eb6",
+    "projectSuite": "smoke"
+  }
+}

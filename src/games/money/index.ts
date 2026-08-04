@@ -34,7 +34,7 @@ export class MoneyGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -46,6 +46,7 @@ export class MoneyGame extends BaseGame {
     this.locked = false;
     this.currentJiao = 0;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     // 难度决定目标金额范围（角）
     const [lo, hi] =
       this.difficulty === "easy"

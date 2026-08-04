@@ -33,11 +33,16 @@ export class ClawGame extends BaseGame {
   private raf = 0;
   private dir = 1;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   protected mount(): void {
     this.target =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startRound();
   }
   protected unmount(): void {
@@ -46,6 +51,7 @@ export class ClawGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.score = 0;
     this.over = false;
     this.armX = 50;
@@ -156,16 +162,21 @@ export class ClawGame extends BaseGame {
       if (this.score >= this.target) {
         this.over = true;
         cancelAnimationFrame(this.raf);
-        this.trackTimeout(
-          () =>
+        this.resetWrongStreak();
+        this.roundsDone += 1;
+        this.reportProgress(this.roundsDone, this.roundTotal);
+        this.trackTimeout(() => {
+          if (this.roundsDone >= this.roundTotal) {
             this.finishClear(
               starsByScore(this.score, [
                 this.target,
                 Math.ceil(this.target / 2),
               ]),
-            ),
-          800,
-        );
+            );
+          } else {
+            this.startRound();
+          }
+        }, 800);
       } else {
         this.armState = "move";
       }

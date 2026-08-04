@@ -15,6 +15,8 @@ export interface OverlayOptions {
   primary?: ButtonOptions;
   /** 次按钮 */
   secondary?: ButtonOptions;
+  /** 第三按钮（如"下一个"） */
+  tertiary?: ButtonOptions;
   /** 顶部大图标/插画 emoji */
   emoji?: string;
   /** 是否允许点击蒙层关闭（默认 false，防误触） */
@@ -58,12 +60,17 @@ export class Overlay {
       card.appendChild(bodyEl);
     }
 
-    if (opts.primary || opts.secondary) {
+    if (opts.primary || opts.secondary || opts.tertiary) {
       const actions = document.createElement("div");
       actions.className = "overlay__actions";
       if (opts.secondary) {
         actions.appendChild(
           createButton({ ...opts.secondary, variant: "secondary" }),
+        );
+      }
+      if (opts.tertiary) {
+        actions.appendChild(
+          createButton({ ...opts.tertiary, variant: "secondary" }),
         );
       }
       if (opts.primary) {

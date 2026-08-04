@@ -2,7 +2,7 @@
  * 成就系统 —— 分层成就体系（30 个成就，4 大类）。
  *
  * 设计：
- * - 【里程碑】通关数累计（1/5/10/20/40/81 个游戏）
+ * - 【里程碑】通关数累计（1/5/10/20/40/全部 个游戏）
  * - 【品类】按游戏类型集齐（认知/数学/语言/科学/动作各通关 5 个）
  * - 【技能】特定高难表现（满星、困难通关、零失误等）
  * - 【隐藏】特殊条件触发的彩蛋成就
@@ -13,6 +13,7 @@
 
 import type { SaveData } from "../types.ts";
 import { ALL_GAME_IDS } from "./storage.ts";
+import { LEARN_PATHS, isPathComplete } from "../learn/paths.ts";
 
 export interface AchievementMeta {
   id: string;
@@ -68,7 +69,7 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     id: "all-clear",
     name: "全勤小达人",
     icon: "🏆",
-    hint: "通关全部 81 个游戏",
+    hint: `通关全部 ${ALL_GAME_IDS.length} 个游戏`,
     category: "milestone",
   },
 
@@ -106,6 +107,27 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     name: "动作小健将",
     icon: "⚡",
     hint: "通关 5 个「动作/反应」类游戏",
+    category: "category",
+  },
+  {
+    id: "cat-social",
+    name: "社交小达人",
+    icon: "🤝",
+    hint: "通关 5 个「社交」类游戏",
+    category: "category",
+  },
+  {
+    id: "cat-art",
+    name: "艺术小明星",
+    icon: "🎭",
+    hint: "通关 5 个「艺术」类游戏",
+    category: "category",
+  },
+  {
+    id: "cat-life",
+    name: "生活小能手",
+    icon: "🏠",
+    hint: "通关 5 个「生活」类游戏",
     category: "category",
   },
 
@@ -227,7 +249,7 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     id: "jack-of-all",
     name: "博学多才",
     icon: "🦉",
-    hint: "每个类别都至少通关 1 个",
+    hint: "在 4 个不同类别的游戏里都通关过",
     category: "hidden",
     hidden: true,
   },
@@ -246,6 +268,50 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     hint: "累计游玩 100 局",
     category: "hidden",
     hidden: true,
+  },
+
+  // ===== 学习路径（学完全部 5 条路径里的 N 条）=====
+  {
+    id: "path-cognition",
+    name: "启蒙小学者",
+    icon: "🎨",
+    hint: "学完「启蒙认知」学习路径",
+    category: "skill",
+  },
+  {
+    id: "path-literacy",
+    name: "识字小能手",
+    icon: "📖",
+    hint: "学完「文字语言」学习路径",
+    category: "skill",
+  },
+  {
+    id: "path-math",
+    name: "数学小天才",
+    icon: "🔢",
+    hint: "学完「数学思维」学习路径",
+    category: "skill",
+  },
+  {
+    id: "path-science",
+    name: "科学小探索",
+    icon: "🔬",
+    hint: "学完「科学常识」学习路径",
+    category: "skill",
+  },
+  {
+    id: "path-review",
+    name: "复习小达人",
+    icon: "🏆",
+    hint: "学完「综合复习」学习路径",
+    category: "skill",
+  },
+  {
+    id: "path-all",
+    name: "全科小学霸",
+    icon: "🎓",
+    hint: "学完全部 5 条学习路径",
+    category: "milestone",
   },
 ] as const;
 
@@ -344,6 +410,24 @@ export function checkMilestoneAchievements(
     tryUnlock("persistent");
   }
 
+  // 学习路径成就：每条路径全通关解锁对应成就；5 条全通关解锁 path-all
+  const PATH_ACH: Record<string, string> = {
+    cognition: "path-cognition",
+    literacy: "path-literacy",
+    math: "path-math",
+    science: "path-science",
+    review: "path-review",
+  };
+  let pathsDone = 0;
+  for (const path of LEARN_PATHS) {
+    if (isPathComplete(path, save)) {
+      pathsDone += 1;
+      const achId = PATH_ACH[path.id];
+      if (achId) tryUnlock(achId);
+    }
+  }
+  if (pathsDone >= LEARN_PATHS.length) tryUnlock("path-all");
+
   // 品类成就：每类通关 5 个
   const catCounts: Record<string, number> = {};
   for (const id of cleared) {
@@ -359,7 +443,18 @@ export function checkMilestoneAchievements(
     逻辑: "cat-action",
     创造: "cat-action",
     记忆: "cat-action",
-    艺术: "cat-action",
+    艺术: "cat-art",
+    社交: "cat-social",
+    生活: "cat-life",
+    精细: "cat-life",
+    健康: "cat-life",
+    专注: "cat-cognition",
+    概率: "cat-action",
+    物理: "cat-science",
+    控制: "cat-action",
+    瞄准: "cat-action",
+    策略: "cat-action",
+    观察: "cat-cognition",
   };
   for (const [cat, count] of Object.entries(catCounts)) {
     const achId = CAT_MAP[cat];

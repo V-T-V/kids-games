@@ -20,6 +20,20 @@ const PAIRS: [string, string][] = [
   ["左", "右"],
   ["黑", "白"],
   ["开", "关"],
+  ["前", "后"],
+  ["里", "外"],
+  ["重", "轻"],
+  ["厚", "薄"],
+  ["粗", "细"],
+  ["远", "近"],
+  ["新", "旧"],
+  ["好", "坏"],
+  ["来", "去"],
+  ["进", "出"],
+  ["哭", "笑"],
+  ["生", "熟"],
+  ["早", "晚"],
+  ["胖", "瘦"],
 ];
 
 export class AntonymGame extends BaseGame {
@@ -32,7 +46,7 @@ export class AntonymGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -41,11 +55,7 @@ export class AntonymGame extends BaseGame {
   }
 
   private pairCount(): number {
-    return this.difficulty === "easy"
-      ? 2
-      : this.difficulty === "medium"
-        ? 3
-        : 4;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {

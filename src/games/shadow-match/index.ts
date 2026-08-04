@@ -30,32 +30,36 @@ export class ShadowMatchGame extends BaseGame {
   constructor() {
     super("shadow-match");
   }
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbinds: (() => void)[] = [];
   private remaining = 0;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
   protected unmount(): void {
-    this.unbinds.forEach((u) => u());
     this.unbinds.forEach((u) => u());
     this.unbinds = [];
   }
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.unbinds.forEach((u) => u());
     this.unbinds = [];
     const n =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const picked = shuffle(ITEMS).slice(0, n);
 
     const wrap = document.createElement("div");
     wrap.className = "shm-wrap";
     const task = document.createElement("div");
     task.className = "shm-task";
-    task.textContent = "把物品放到它自己的影子上～";
+    task.innerHTML = `把物品放到它自己的影子上～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     const board = document.createElement("div");
@@ -138,10 +142,14 @@ export class ShadowMatchGame extends BaseGame {
         this.resetWrongStreak();
         this.remaining -= 1;
         if (this.remaining <= 0)
-          this.trackTimeout(
-            () => this.finishClear(starsByAccuracy(this.wrongCount)),
-            1000,
-          );
+          this.trackTimeout(() => {
+            this.roundsDone += 1;
+            if (this.roundsDone >= this.roundTotal) {
+              this.finishClear(starsByAccuracy(this.wrongCount));
+            } else {
+              this.startRound();
+            }
+          }, 1000);
       } else {
         item.el.style.position = "";
         item.el.style.left = "";

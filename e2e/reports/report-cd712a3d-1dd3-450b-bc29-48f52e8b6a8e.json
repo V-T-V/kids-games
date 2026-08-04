@@ -1,0 +1,119 @@
+{
+  "runId": "cd712a3d-1dd3-450b-bc29-48f52e8b6a8e",
+  "caseName": "kids-games-01-lobby-and-games",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "passed",
+  "startedAt": 1785197003105,
+  "endedAt": 1785197038838,
+  "durationMs": 35733,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 0,
+      "target": "web",
+      "actionType": "waitFor",
+      "status": "passed",
+      "durationMs": 1616,
+      "data": {}
+    },
+    {
+      "index": 1,
+      "stepGroup": 1,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 65,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 2,
+      "stepGroup": 2,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 55,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 3,
+      "stepGroup": 3,
+      "target": "web",
+      "actionType": "screenshot",
+      "status": "passed",
+      "durationMs": 369,
+      "data": {
+        "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ae44afd9.png"
+      }
+    },
+    {
+      "index": 4,
+      "stepGroup": 4,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 10285,
+      "data": {
+        "value": true
+      }
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "target": "web",
+      "stepIndex": 3,
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ae44afd9.png",
+      "contentType": "image/png",
+      "id": "b0b1ca36-d3e8-4815-ab46-97ab8b710685",
+      "createdAt": 1785197023347
+    },
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m1228\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m7013\u001b[22m/\u001b[39m\n",
+      "id": "750293cf-c090-4fe4-ab9c-148dafa25469",
+      "createdAt": 1785197033636
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://0",
+      "content": "[vite] connecting...",
+      "id": "003d6496-8c41-44a0-a1fa-43fb95499a4c",
+      "createdAt": 1785197033637
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://1",
+      "content": "[vite] connected.",
+      "id": "3f576a96-4ab1-4f38-be57-6b8c3d8b1bb5",
+      "createdAt": 1785197033638
+    },
+    {
+      "kind": "trace",
+      "target": "web",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\web-x-b17b9c5d.trace.zip",
+      "label": "Playwright Web trace",
+      "contentType": "application/zip",
+      "id": "c7e071a2-9e58-4b0f-8219-63fb9d92537a",
+      "createdAt": 1785197037778
+    }
+  ],
+  "comparisons": [
+    {
+      "stepGroup": 3,
+      "byTarget": {
+        "web": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ae44afd9.png"
+      }
+    }
+  ]
+}

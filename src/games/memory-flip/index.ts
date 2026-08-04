@@ -35,17 +35,21 @@ export class MemoryFlipGame extends BaseGame {
     super("memory-flip");
   }
 
+  private roundTotal = 0;
+  private roundsDone = 0;
   private cards: Card[] = [];
   private firstPick: Card | null = null;
   private lock = false;
   private moves = 0;
   private wrongMoves = 0;
-  private combo = 0;
+  private mfCombo = 0;
   private pairs = 0;
   private matchedPairs = 0;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.startGame();
   }
 
@@ -60,26 +64,27 @@ export class MemoryFlipGame extends BaseGame {
   }
 
   private startGame(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     this.pairs = this.pairsForDifficulty();
     this.matchedPairs = 0;
     this.moves = 0;
     this.wrongMoves = 0;
-    this.combo = 0;
+    this.mfCombo = 0;
     this.firstPick = null;
     this.lock = false;
 
     const wrap = document.createElement("div");
-    wrap.className = "mf-wrap";
+    wrap.className = "mfl-wrap";
 
     const task = document.createElement("div");
-    task.className = "mf-task";
-    task.innerHTML = `找出相同的卡片对～ <span class="mf-stat" id="mf-pairs">0/${this.pairs}</span>
-      <span class="mf-combo" id="mf-combo"></span>`;
+    task.className = "mfl-task";
+    task.innerHTML = `找出相同的卡片对～ <span class="mfl-stat" id="mfl-pairs">0/${this.pairs}</span>
+      <span class="mfl-combo" id="mfl-combo"></span>`;
     wrap.appendChild(task);
 
     const grid = document.createElement("div");
-    grid.className = "mf-grid";
+    grid.className = "mfl-grid";
     grid.style.setProperty("--cols", String(Math.ceil((this.pairs * 2) / 2)));
 
     const chosen = shuffle([...ICONS]).slice(0, this.pairs);
@@ -88,8 +93,8 @@ export class MemoryFlipGame extends BaseGame {
     this.cards = deck.map((icon) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "mf-card";
-      btn.innerHTML = `<span class="mf-card__back">❓</span><span class="mf-card__face">${icon}</span>`;
+      btn.className = "mfl-card";
+      btn.innerHTML = `<span class="mfl-card__back">❓</span><span class="mfl-card__face">${icon}</span>`;
       const card: Card = { icon, el: btn, flipped: false, matched: false };
       btn.addEventListener("click", () => this.flip(card));
       grid.appendChild(btn);
@@ -103,7 +108,7 @@ export class MemoryFlipGame extends BaseGame {
   private flip(card: Card): void {
     if (this.lock || card.flipped || card.matched) return;
     card.flipped = true;
-    card.el.classList.add("mf-card--flipped");
+    card.el.classList.add("mfl-card--flipped");
     sfxPop();
 
     if (!this.firstPick) {
@@ -121,14 +126,14 @@ export class MemoryFlipGame extends BaseGame {
       this.trackTimeout(() => {
         first.matched = true;
         card.matched = true;
-        first.el.classList.add("mf-card--matched");
-        card.el.classList.add("mf-card--matched");
+        first.el.classList.add("mfl-card--matched");
+        card.el.classList.add("mfl-card--matched");
         this.matchedPairs += 1;
-        this.combo += 1;
+        this.mfCombo += 1;
         this.updateStat();
         const r = card.el.getBoundingClientRect();
         this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
-        if (this.combo >= 2) {
+        if (this.mfCombo >= 2) {
           burst(r.left + r.width / 2, r.top + r.height / 2, 12);
         }
         this.resetWrongStreak();
@@ -139,15 +144,15 @@ export class MemoryFlipGame extends BaseGame {
       }, 400);
     } else {
       // 不配对，翻回
-      this.combo = 0;
+      this.mfCombo = 0;
       this.wrongMoves += 1;
       this.updateStat();
       const paused = this.onWrong();
       this.trackTimeout(() => {
         first.flipped = false;
         card.flipped = false;
-        first.el.classList.remove("mf-card--flipped");
-        card.el.classList.remove("mf-card--flipped");
+        first.el.classList.remove("mfl-card--flipped");
+        card.el.classList.remove("mfl-card--flipped");
         this.lock = false;
       }, 900);
       if (paused) this.showRest();
@@ -155,11 +160,11 @@ export class MemoryFlipGame extends BaseGame {
   }
 
   private updateStat(): void {
-    const p = this.root.querySelector("#mf-pairs");
+    const p = this.root.querySelector("#mfl-pairs");
     if (p) p.textContent = `${this.matchedPairs}/${this.pairs}`;
-    const c = this.root.querySelector("#mf-combo") as HTMLElement | null;
+    const c = this.root.querySelector("#mfl-combo") as HTMLElement | null;
     if (c) {
-      c.textContent = this.combo >= 2 ? `🔥 连击 x${this.combo}` : "";
+      c.textContent = this.mfCombo >= 2 ? `🔥 连击 x${this.mfCombo}` : "";
     }
   }
 
@@ -170,7 +175,11 @@ export class MemoryFlipGame extends BaseGame {
     if (this.difficulty === "hard" && this.wrongMoves === 0) {
       this.unlock("perfect-memory");
     }
-    this.trackTimeout(() => this.finishClear(stars), 600);
+    this.trackTimeout(() => {
+      this.roundsDone += 1;
+      if (this.roundsDone >= this.roundTotal) this.finishClear(stars);
+      else this.startGame();
+    }, 600);
   }
 
   private showRest(): void {
@@ -193,9 +202,9 @@ export class MemoryFlipGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("mf-style")) return;
+    if (document.getElementById("mfl-style")) return;
     const st = document.createElement("style");
-    st.id = "mf-style";
+    st.id = "mfl-style";
     st.textContent = MF_CSS(getCssVar("--c-purple"));
     document.head.appendChild(st);
   }
@@ -203,24 +212,24 @@ export class MemoryFlipGame extends BaseGame {
 
 function MF_CSS(theme: string): string {
   return `
-.mf-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(480px,100%);}
-.mf-task{font-size:1.15rem;font-weight:800;text-align:center;}
-.mf-stat{color:${theme};}
-.mf-combo{display:inline-block;margin-left:10px;color:#ff6348;font-size:.95rem;}
-.mf-grid{display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:10px;justify-content:center;}
-.mf-card{width:88px;height:104px;border-radius:16px;border:none;perspective:600px;background:transparent;cursor:pointer;padding:0;}
-.mf-card__back,.mf-card__face{
+.mfl-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(480px,100%);}
+.mfl-task{font-size:1.15rem;font-weight:800;text-align:center;}
+.mfl-stat{color:${theme};}
+.mfl-combo{display:inline-block;margin-left:10px;color:#ff6348;font-size:.95rem;}
+.mfl-grid{display:grid;grid-template-columns:repeat(var(--cols,3),1fr);gap:10px;justify-content:center;}
+.mfl-card{width:88px;height:104px;border-radius:16px;border:none;perspective:600px;background:transparent;cursor:pointer;padding:0;}
+.mfl-card__back,.mfl-card__face{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   border-radius:16px;backface-visibility:hidden;transition:transform .4s ease;font-size:2.4rem;
 }
-.mf-card__back{background:linear-gradient(135deg,${theme},color-mix(in srgb,${theme} 60%,#000));box-shadow:var(--shadow);}
-.mf-card__face{background:#fff;transform:rotateY(180deg);box-shadow:var(--shadow);}
-.mf-card{position:relative;transform-style:preserve-3d;transition:transform .4s ease;}
-.mf-card--flipped{transform:rotateY(180deg);}
-.mf-card--matched .mf-card__face{background:#d4f4dd;animation:mf-bounce .5s ease;}
-.mf-card--matched{pointer-events:none;}
-@keyframes mf-bounce{0%{transform:scale(1) rotateY(180deg)}50%{transform:scale(1.15) rotateY(180deg)}100%{transform:scale(1) rotateY(180deg)}}
-@media (max-width:380px){.mf-card{width:72px;height:88px;}.mf-card__back,.mf-card__face{font-size:2rem;}}
+.mfl-card__back{background:linear-gradient(135deg,${theme},color-mix(in srgb,${theme} 60%,#000));box-shadow:var(--shadow);}
+.mfl-card__face{background:#fff;transform:rotateY(180deg);box-shadow:var(--shadow);}
+.mfl-card{position:relative;transform-style:preserve-3d;transition:transform .4s ease;}
+.mfl-card--flipped{transform:rotateY(180deg);}
+.mfl-card--matched .mfl-card__face{background:#d4f4dd;animation:mfl-bounce .5s ease;}
+.mfl-card--matched{pointer-events:none;}
+@keyframes mfl-bounce{0%{transform:scale(1) rotateY(180deg)}50%{transform:scale(1.15) rotateY(180deg)}100%{transform:scale(1) rotateY(180deg)}}
+@media (max-width:380px){.mfl-card{width:72px;height:88px;}.mfl-card__back,.mfl-card__face{font-size:2rem;}}
 `;
 }
 

@@ -4,8 +4,12 @@
  * 用一个固定全屏 Canvas 绘制，所有游戏共享。
  * 提供 burst()（点击处迸发）与 confetti()（满屏彩纸庆祝）两个高层 API。
  * 内部用单个 requestAnimationFrame 循环管理所有粒子，性能友好。
+ *
+ * 尊重 prefers-reduced-motion：开启时粒子数与速度按 motionScale 衰减，
+ * 让前庭敏感/光敏的孩子或家长不会被满屏粒子干扰。
  */
 import type { Particle } from "../types.ts";
+import { motionScale } from "./loop.ts";
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -51,19 +55,21 @@ export function burst(
   count = 18,
   shapes: Particle["shape"][] = ["star", "circle", "heart"],
 ): void {
-  for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-    const speed = 3 + Math.random() * 4;
+  const ms = motionScale();
+  const n = Math.max(4, Math.round(count * ms));
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i) / n + Math.random() * 0.4;
+    const speed = (3 + Math.random() * 4) * ms;
     const life = 40 + Math.floor(Math.random() * 20);
     particles.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
+      vy: Math.sin(angle) * speed - 2 * ms,
       size: 8 + Math.random() * 8,
       color: rand(PALETTE),
       rot: Math.random() * Math.PI,
-      vrot: (Math.random() - 0.5) * 0.3,
+      vrot: (Math.random() - 0.5) * 0.3 * ms,
       life,
       maxLife: life,
       shape: rand(shapes),
@@ -75,18 +81,20 @@ export function burst(
 /** 满屏彩纸雨（通关庆祝用）。 */
 export function confetti(count = 80): void {
   if (!canvas) return;
+  const ms = motionScale();
   const w = canvas.width;
-  for (let i = 0; i < count; i++) {
+  const n = Math.max(12, Math.round(count * ms));
+  for (let i = 0; i < n; i++) {
     const life = 90 + Math.floor(Math.random() * 60);
     particles.push({
       x: Math.random() * w,
       y: -20 - Math.random() * 100,
-      vx: (Math.random() - 0.5) * 3,
-      vy: 2 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 3 * ms,
+      vy: (2 + Math.random() * 3) * ms,
       size: 8 + Math.random() * 10,
       color: rand(PALETTE),
       rot: Math.random() * Math.PI,
-      vrot: (Math.random() - 0.5) * 0.4,
+      vrot: (Math.random() - 0.5) * 0.4 * ms,
       life,
       maxLife: life,
       shape: Math.random() < 0.5 ? "rect" : "circle",

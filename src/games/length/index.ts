@@ -15,10 +15,12 @@ export class LengthGame extends BaseGame {
   }
   private roundsDone = 0;
   private roundTotal = 0;
+  /** 本关是否已答对，防止连点正确项跳关。 */
+  private answered = false;
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -27,15 +29,13 @@ export class LengthGame extends BaseGame {
   }
 
   private count(): number {
-    return this.difficulty === "easy"
-      ? 2
-      : this.difficulty === "medium"
-        ? 3
-        : 4;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
+    this.answered = false; // 重置本关答题锁
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const n = this.count();
     const lengths = shuffle([40, 60, 80, 100, 120]).slice(0, n);
     const maxL = Math.max(...lengths);
@@ -67,7 +67,9 @@ export class LengthGame extends BaseGame {
   }
 
   private choose(len: number, answer: number, btn: HTMLButtonElement): void {
+    if (this.answered) return; // 本关已答对，防连点跳关
     if (len === answer) {
+      this.answered = true;
       sfxPop();
       btn.classList.add("ln-bar--done");
       const r = btn.getBoundingClientRect();

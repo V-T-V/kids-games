@@ -61,12 +61,16 @@ export class MagnetMazeGame extends BaseGame {
   private stuck = false; // 被磁铁吸住
   private startedMs = 0;
   private done = false;
-  /** 当前按下的方向键集合 */
+  private roundsDone = 0;
+  private roundTotal = 0; /** 当前按下的方向键集合 */
   private dir = { up: false, down: false, left: false, right: false };
   private unbindKey: (() => void) | null = null;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startRound();
   }
   protected unmount(): void {
@@ -76,6 +80,7 @@ export class MagnetMazeGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.done = false;
     this.stuck = false;
 
@@ -101,7 +106,7 @@ export class MagnetMazeGame extends BaseGame {
 
     // 磁铁：在中间通路随机放置
     const magCount =
-      this.difficulty === "easy" ? 1 : this.difficulty === "medium" ? 2 : 3;
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 6;
     this.magnets = [];
     const placed = new Set<string>();
     let guard = 0;
@@ -331,16 +336,23 @@ export class MagnetMazeGame extends BaseGame {
     // onCorrect→burst 需要视口坐标，ball.x/y 是画布内坐标，需换算
     const rc = this.canvas.getBoundingClientRect();
     this.onCorrect(rc.left + this.ball.x, rc.top + this.ball.y);
+    this.resetWrongStreak();
+    this.roundsDone += 1;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.trackTimeout(() => {
-      const dur = Date.now() - this.startedMs;
-      // 按用时算星：易 25s/40s，中 35s/55s，难 45s/70s
-      const base =
-        this.difficulty === "easy"
-          ? [25000, 40000]
-          : this.difficulty === "medium"
-            ? [35000, 55000]
-            : [45000, 70000];
-      this.finishClear(starsByTime(dur, base as [number, number]));
+      if (this.roundsDone >= this.roundTotal) {
+        const dur = Date.now() - this.startedMs;
+        // 按用时算星：易 25s/40s，中 35s/55s，难 45s/70s
+        const base =
+          this.difficulty === "easy"
+            ? [25000, 40000]
+            : this.difficulty === "medium"
+              ? [35000, 55000]
+              : [45000, 70000];
+        this.finishClear(starsByTime(dur, base as [number, number]));
+      } else {
+        this.startRound();
+      }
     }, 500);
   }
 

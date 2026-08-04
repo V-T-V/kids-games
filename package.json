@@ -1,9 +1,9 @@
 {
   "name": "kids-games",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "童趣游戏屋 —— 为 3~6 岁儿童设计的 81 个寓教于乐网页小游戏。有设计感、有巧思、能反复玩。",
+  "description": "童趣游戏屋 —— 为 3~6 岁儿童设计的 575 个寓教于乐网页小游戏。有设计感、有巧思、能反复玩。",
   "engines": {
     "node": ">=20.19.0"
   },
@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "serve": "node serve.mjs",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -25,9 +26,13 @@
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "prettier": "^3.0.0",
+    "puppeteer-core": "^25.3.0",
     "tsx": "^4.19.0",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.0.0",
     "vite": "^5.4.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.62.2"
   }
 }

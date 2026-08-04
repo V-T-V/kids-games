@@ -1,0 +1,178 @@
+{
+  "runId": "81330455-035c-4075-ae4c-f50333ca0e31",
+  "caseName": "kids-games-01-lobby-and-games",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "failed",
+  "startedAt": 1785676805859,
+  "endedAt": 1785676857991,
+  "durationMs": 52132,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 0,
+      "target": "web",
+      "actionType": "waitFor",
+      "status": "passed",
+      "durationMs": 3908,
+      "data": {}
+    },
+    {
+      "index": 1,
+      "stepGroup": 1,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 181,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 2,
+      "stepGroup": 2,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 160,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 3,
+      "stepGroup": 3,
+      "target": "web",
+      "actionType": "screenshot",
+      "status": "passed",
+      "durationMs": 720,
+      "data": {
+        "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ba4bfd11.png"
+      }
+    },
+    {
+      "index": 4,
+      "stepGroup": 4,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 10253,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 5,
+      "stepGroup": 100005,
+      "target": "web",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "driver shutdown 失败：driver web shutdown超时 (6433ms)"
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "target": "web",
+      "stepIndex": 3,
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ba4bfd11.png",
+      "contentType": "image/png",
+      "id": "f5dbf98a-127b-4331-bae1-20a069c4e220",
+      "createdAt": 1785676840221
+    },
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m2082\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m7938\u001b[22m/\u001b[39m\n",
+      "id": "b734e778-eed3-40f8-9b74-9aed57a64356",
+      "createdAt": 1785676850480
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://0",
+      "content": "[vite] connecting...",
+      "id": "fc9f9aaf-1274-4546-8913-81e39ad38d67",
+      "createdAt": 1785676850484
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://1",
+      "content": "[vite] connected.",
+      "id": "dfc13747-8d9a-4713-b816-5f50555ca7aa",
+      "createdAt": 1785676850484
+    },
+    {
+      "kind": "trace",
+      "target": "web",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\web-x-9073ca91.trace.zip",
+      "label": "Playwright Web trace",
+      "contentType": "application/zip",
+      "id": "f998e5a5-71fa-4342-81bc-28e4be8aca03",
+      "createdAt": 1785676857219
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-81330455-035c-4075-ae4c-f50333ca0e31.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785676858064
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-81330455-035c-4075-ae4c-f50333ca0e31.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785676858066
+    },
+    {
+      "id": "report-8",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-81330455-035c-4075-ae4c-f50333ca0e31.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785676858072
+    },
+    {
+      "id": "report-9",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785676858085
+    },
+    {
+      "id": "report-10",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785676858098
+    }
+  ],
+  "comparisons": [
+    {
+      "stepGroup": 3,
+      "byTarget": {
+        "web": "D:\\M_X_M\\kids-games\\e2e\\reports\\any-x-ba4bfd11.png"
+      }
+    }
+  ],
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "5e344268076a60d23efcac5978f65ab8b5cfee524793724f474dfdea7d7ba51d",
+    "projectSuite": "smoke"
+  }
+}

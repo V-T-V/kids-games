@@ -14,9 +14,37 @@ import { hideMascot } from "../core/mascot.ts";
 import { ACHIEVEMENTS } from "../core/achievements.ts";
 import {
   buildParentReport,
+  buildDomainReport,
   formatParentSummary,
 } from "../core/parentReport.ts";
-import type { Difficulty } from "../types.ts";
+import {
+  loadFeedback,
+  clearFeedback,
+  resolveFeedback,
+  deleteFeedback,
+  exportFeedback,
+  FEEDBACK_TYPES,
+  type FeedbackType,
+} from "../core/feedback.ts";
+import {
+  getSyncConfig,
+  setSyncConfig,
+  isSyncReady,
+  getPendingCount,
+  flushAllPending,
+  clearPending,
+  SYNC_EVENT,
+} from "../core/sync.ts";
+import { LEARN_PATHS, pathClearedCount } from "../learn/paths.ts";
+import { isTTSEnabled, setTTSEnabled } from "../core/tts.ts";
+import type { Difficulty, SyncConfig } from "../types.ts";
+
+const DIFF_LABEL_FB: Record<Difficulty | "", string> = {
+  easy: "简单",
+  medium: "中等",
+  hard: "困难",
+  "": "",
+};
 
 const CAT_LABEL: Record<string, string> = {
   milestone: "🏆 里程碑",
@@ -88,7 +116,7 @@ function diffPicker(
 }
 
 /** 构建整个面板内容 DOM（含事件绑定）。 */
-function buildBody(): HTMLElement {
+function buildBody(getOverlay?: () => Overlay | undefined): HTMLElement {
   const save = loadSave();
   const root = el("div", "pp-root");
 
@@ -140,6 +168,63 @@ function buildBody(): HTMLElement {
       }),
     ),
   );
+
+  // 反馈同步到 generic-admin 后台（默认关闭，opt-in）。
+  // 开关 + 「配置」按钮（弹 prompt 输入 baseUrl + token，存独立 localStorage key）。
+  const syncCfg = getSyncConfig();
+  const syncControl = el("div", "pp-sync-control");
+  syncControl.appendChild(
+    toggleBtn(syncCfg.enabled, () => {
+      const c = getSyncConfig();
+      c.enabled = !c.enabled;
+      setSyncConfig(c);
+      if (c.enabled && (!c.baseUrl || !c.token)) {
+        toast("已开启，请点「配置」填后台地址和 token ⚙️");
+      } else {
+        toast(c.enabled ? "反馈同步已开启 ☁️" : "反馈同步已关闭");
+      }
+      return c.enabled;
+    }),
+  );
+  const cfgBtn = document.createElement("button");
+  cfgBtn.type = "button";
+  cfgBtn.className = "pp-sync-config-btn";
+  cfgBtn.textContent = "⚙️ 配置";
+  cfgBtn.addEventListener("click", () => {
+    const c = getSyncConfig();
+    const baseUrl = window.prompt(
+      "后台 API 地址\n（generic-admin，如 http://127.0.0.1:8080/api/v1）",
+      c.baseUrl || "http://127.0.0.1:8080/api/v1",
+    );
+    if (baseUrl === null) return; // 取消
+    const token = window.prompt(
+      "API token\n（在 generic-admin 后台创建，用于推送反馈）",
+      c.token,
+    );
+    if (token === null) return; // 取消
+    const next: SyncConfig = {
+      enabled: baseUrl.trim().length > 0 && token.trim().length > 0,
+      baseUrl: baseUrl.trim(),
+      token: token.trim(),
+    };
+    setSyncConfig(next);
+    toast(isSyncReady() ? "配置已保存 ☁️" : "地址或 token 为空，未启用");
+  });
+  syncControl.appendChild(cfgBtn);
+  settingsBox.appendChild(settingRow("反馈同步", syncControl));
+
+  // 语音朗读（TTS）：为不识字的孩子朗读游戏任务
+  settingsBox.appendChild(
+    settingRow(
+      "🔊 任务朗读",
+      toggleBtn(isTTSEnabled(), () => {
+        const next = !isTTSEnabled();
+        setTTSEnabled(next);
+        toast(next ? "朗读已开启 🔊" : "朗读已关闭");
+        return next;
+      }),
+    ),
+  );
   root.appendChild(settingsBox);
 
   /* —— 家长报告 —— */
@@ -184,6 +269,41 @@ function buildBody(): HTMLElement {
   reportBox.appendChild(rec);
   root.appendChild(reportBox);
 
+  /* —— 学习路径进度（家长最关心：孩子学到哪了）—— */
+  const learnBox = el("div", "pp-section");
+  const lTitle = el("h3", "pp-section__title");
+  lTitle.textContent = "📚 学习路径";
+  learnBox.appendChild(lTitle);
+  for (const path of LEARN_PATHS) {
+    const cleared = pathClearedCount(path, save);
+    const total = path.games.length;
+    const pct = total > 0 ? Math.round((cleared / total) * 100) : 0;
+    const done = cleared >= total;
+    const row = el("div", "pp-learn-row");
+    row.innerHTML = `<span class="pp-learn-row__icon">${path.icon}</span>
+      <span class="pp-learn-row__name">${path.title}<small>${path.ageRange} · ${path.subtitle}</small></span>
+      <span class="pp-learn-row__progress">${done ? "✅ 完成" : cleared + "/" + total + "（" + pct + "%）"}</span>`;
+    learnBox.appendChild(row);
+  }
+  root.appendChild(learnBox);
+
+  /* —— 六大领域能力概览（加德纳多元智能，与学习中心一致）—— */
+  const domainBox = el("div", "pp-section");
+  const dTitle = el("h3", "pp-section__title");
+  dTitle.textContent = "🧠 六大领域能力";
+  domainBox.appendChild(dTitle);
+  const domainReport = buildDomainReport(save);
+  for (const dr of domainReport) {
+    if (dr.played === 0) continue; // 未玩的领域不显示
+    const row = el("div", "pp-learn-row");
+    const pct = dr.games > 0 ? Math.round((dr.cleared / dr.games) * 100) : 0;
+    row.innerHTML = `<span class="pp-learn-row__icon">${dr.icon}</span>
+      <span class="pp-learn-row__name">${dr.title}<small>体验 ${dr.played}/${dr.games} · 通关 ${dr.cleared} · ⭐${dr.avgStars}</small></span>
+      <span class="pp-learn-row__progress">${pct}%</span>`;
+    domainBox.appendChild(row);
+  }
+  root.appendChild(domainBox);
+
   /* —— 成就墙（按分类分组） —— */
   const achBox = el("div", "pp-section");
   const aTitle = el("h3", "pp-section__title");
@@ -226,13 +346,170 @@ function buildBody(): HTMLElement {
   }
   root.appendChild(progBox);
 
+  /* —— 问题反馈汇总（增强：上下文/标记已处理/单条删除/导出/类型筛选）—— */
+  const feedback = loadFeedback();
+  if (feedback.length > 0) {
+    const fbBox = el("div", "pp-section");
+    const fbTitle = el("h3", "pp-section__title");
+    const unresolved = feedback.filter((f) => !f.resolved).length;
+    fbTitle.textContent = `💬 问题反馈（${feedback.length} 条${unresolved > 0 ? `，${unresolved} 条未处理` : "，全部已处理"}）`;
+    fbBox.appendChild(fbTitle);
+
+    // 按类型统计 + 筛选 chips
+    const typeCounts: Record<string, number> = {};
+    feedback.forEach((f) => {
+      typeCounts[f.type] = (typeCounts[f.type] ?? 0) + 1;
+    });
+    const fbSummary = el("div", "pp-fb-summary");
+    let activeFilter: FeedbackType | "all" = "all";
+    const filterChips: HTMLElement[] = [];
+    const allChip = el("span", "pp-fb-chip pp-fb-chip--active");
+    allChip.textContent = `全部 ×${feedback.length}`;
+    allChip.addEventListener("click", () => {
+      activeFilter = "all";
+      filterChips.forEach((c) => c.classList.remove("pp-fb-chip--active"));
+      allChip.classList.add("pp-fb-chip--active");
+      refreshList();
+    });
+    filterChips.push(allChip);
+    fbSummary.appendChild(allChip);
+    (Object.keys(typeCounts) as FeedbackType[]).forEach((t) => {
+      const info = FEEDBACK_TYPES[t];
+      const chip = el("span", "pp-fb-chip");
+      chip.textContent = `${info.icon} ${info.short} ×${typeCounts[t]}`;
+      chip.addEventListener("click", () => {
+        activeFilter = t;
+        filterChips.forEach((c) => c.classList.remove("pp-fb-chip--active"));
+        chip.classList.add("pp-fb-chip--active");
+        refreshList();
+      });
+      filterChips.push(chip);
+      fbSummary.appendChild(chip);
+    });
+    fbBox.appendChild(fbSummary);
+
+    // 反馈列表容器（支持筛选刷新）
+    const fbList = el("div", "pp-fb-list");
+    fbBox.appendChild(fbList);
+
+    function refreshList(): void {
+      fbList.innerHTML = "";
+      const shown =
+        activeFilter === "all"
+          ? feedback.slice().reverse()
+          : feedback.filter((f) => f.type === activeFilter).reverse();
+      shown.forEach((f) => {
+        const info = FEEDBACK_TYPES[f.type];
+        const date = new Date(f.timestamp);
+        const timeStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+        const diffLabel = DIFF_LABEL_FB[f.difficulty] ?? "";
+        const ctx = f.context
+          ? `<span class="pp-fb__ctx">第${f.context.round ?? "?"}关 · 对${f.context.right ?? 0}错${f.context.wrong ?? 0}${f.context.durationMs != null ? ` · ${Math.round(f.context.durationMs / 1000)}秒` : ""}</span>`
+          : "";
+        const item = el("div", "pp-fb-item");
+        if (f.resolved) item.classList.add("pp-fb-item--resolved");
+        item.innerHTML = `<span class="pp-fb__icon">${info.icon}</span>
+          <div class="pp-fb__content">
+            <div class="pp-fb__head">${f.gameTitle}${diffLabel ? ` · ${diffLabel}` : ""} · ${info.short} · <small>${timeStr}</small></div>
+            ${ctx}
+            ${f.description ? `<div class="pp-fb__desc">${f.description}</div>` : ""}
+          </div>`;
+        // 操作按钮：标记已处理 / 删除
+        const actions = el("div", "pp-fb__actions");
+        const resolveBtn = el("button", "pp-fb__btn");
+        resolveBtn.textContent = f.resolved ? "↩ 撤销" : "✓ 已处理";
+        resolveBtn.addEventListener("click", () => {
+          resolveFeedback(f.timestamp, !f.resolved);
+          getOverlay?.()?.destroy();
+          openParentPanel();
+        });
+        const delBtn = el("button", "pp-fb__btn pp-fb__btn--del");
+        delBtn.textContent = "🗑";
+        delBtn.title = "删除这条反馈";
+        delBtn.addEventListener("click", () => {
+          deleteFeedback(f.timestamp);
+          getOverlay?.()?.destroy();
+          openParentPanel();
+        });
+        actions.appendChild(resolveBtn);
+        actions.appendChild(delBtn);
+        item.appendChild(actions);
+        fbList.appendChild(item);
+      });
+    }
+    refreshList();
+
+    // 底部操作栏：导出 + 清空
+    const fbActions = el("div", "pp-fb-bottom");
+    const exportBtn = el("button", "pp-fb-clear");
+    exportBtn.textContent = "📋 复制全部";
+    exportBtn.addEventListener("click", async () => {
+      const text = exportFeedback();
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("反馈已复制到剪贴板 📋");
+      } catch {
+        // 降级：选中文本提示手动复制
+        toast("复制失败，请手动选择文本");
+      }
+    });
+    fbActions.appendChild(exportBtn);
+
+    // 同步就绪时显示「立即同步」按钮（推 pending + 全量补推本地）。
+    if (isSyncReady()) {
+      const syncBtn = document.createElement("button");
+      syncBtn.type = "button";
+      syncBtn.className = "pp-fb-clear";
+      const renderSyncBtn = (): void => {
+        syncBtn.textContent = `☁️ 同步到后台 (${getPendingCount()})`;
+      };
+      renderSyncBtn();
+      syncBtn.addEventListener("click", async () => {
+        syncBtn.disabled = true;
+        syncBtn.textContent = "☁️ 同步中…";
+        try {
+          const r = await flushAllPending();
+          toast(
+            r.failed === 0
+              ? `同步完成，已推送 ${r.success} 条 ☁️`
+              : `推送 ${r.success} 条，${r.failed} 条待重试`,
+          );
+        } catch {
+          toast("同步失败，已保存本地稍后重试");
+        } finally {
+          syncBtn.disabled = false;
+          renderSyncBtn();
+        }
+      });
+      // pending 变化时刷新按钮数字（同步成功/新入队都会派发 SYNC_EVENT）
+      const onSync = (): void => renderSyncBtn();
+      window.addEventListener(SYNC_EVENT, onSync);
+      fbActions.appendChild(syncBtn);
+    }
+
+    const clearBtn = el("button", "pp-fb-clear");
+    clearBtn.textContent = "🗑️ 清空全部";
+    clearBtn.addEventListener("click", () => {
+      clearFeedback();
+      clearPending(); // 联动：清空反馈时一并清空待同步队列
+      toast("反馈已清空");
+      getOverlay?.()?.destroy();
+      openParentPanel();
+    });
+    fbActions.appendChild(clearBtn);
+    fbBox.appendChild(fbActions);
+
+    root.appendChild(fbBox);
+  }
+
   return root;
 }
 
 export function openParentPanel(): void {
+  const overlayRef: { current: Overlay | null } = { current: null };
   const overlay = new Overlay({
     title: "家长面板",
-    body: buildBody(),
+    body: buildBody(() => overlayRef.current ?? undefined),
     variant: "default",
     primary: {
       text: "完成",
@@ -244,6 +521,7 @@ export function openParentPanel(): void {
       icon: "🗑️",
       onClick: () => {
         resetSave();
+        clearFeedback(); // 联动：重置进度时一并清空反馈，语义统一
         clearParticles();
         hideMascot();
         toast("进度已重置 ✨");
@@ -251,5 +529,6 @@ export function openParentPanel(): void {
       },
     },
   });
+  overlayRef.current = overlay;
   overlay.show();
 }

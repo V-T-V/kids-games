@@ -34,7 +34,7 @@ export class SpotDiffGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -43,11 +43,7 @@ export class SpotDiffGame extends BaseGame {
   }
 
   private diffCount(): number {
-    return this.difficulty === "easy"
-      ? 2
-      : this.difficulty === "medium"
-        ? 3
-        : 4;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
@@ -66,13 +62,14 @@ export class SpotDiffGame extends BaseGame {
     wrap.className = "sd-wrap";
     const task = document.createElement("div");
     task.className = "sd-task";
-    task.textContent = `找出 ${diffCount} 处不同～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
+    task.innerHTML = `找出 <b>${diffCount}</b> 处不同～点左图或右图都可以（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     const board = document.createElement("div");
     board.className = "sd-board";
-    board.appendChild(this.makeGrid(base, false));
-    board.appendChild(this.makeGrid(right, true, diffIdx));
+    // 两张图都可点击：孩子本能会点任一张，两张都接受点击
+    board.appendChild(this.makeGrid(base, true, diffIdx, "L"));
+    board.appendChild(this.makeGrid(right, true, diffIdx, "R"));
     wrap.appendChild(board);
     this.root.appendChild(wrap);
   }
@@ -81,7 +78,9 @@ export class SpotDiffGame extends BaseGame {
     items: string[],
     interactive: boolean,
     diffIdx: number[] = [],
+    _side: string = "",
   ): HTMLDivElement {
+    void _side;
     const grid = document.createElement("div");
     grid.className = "sd-grid";
     items.forEach((e, i) => {

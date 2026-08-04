@@ -10,6 +10,8 @@ export class SlidingPuzzleGame extends BaseGame {
   constructor() {
     super("sliding-puzzle");
   }
+  private roundTotal = 0;
+  private roundsDone = 0;
   private n = 3;
   private tiles: number[] = []; // 0 表示空格
   private moves = 0;
@@ -17,6 +19,8 @@ export class SlidingPuzzleGame extends BaseGame {
   protected mount(): void {
     this.n =
       this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 3 : 4;
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -25,11 +29,15 @@ export class SlidingPuzzleGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     const total = this.n * this.n;
     // 初始为已排好，然后用合法移动打乱（保证可解）
     this.tiles = Array.from({ length: total }, (_, i) => (i + 1) % total); // 最后一个是 0(空)
-    for (let i = 0; i < 200; i++) this.shuffleStep();
+    // 打乱步数按难度分级：easy 少打乱（孩子能解），hard 充分打乱
+    const shuffleSteps =
+      this.difficulty === "easy" ? 12 : this.difficulty === "medium" ? 40 : 120;
+    for (let i = 0; i < shuffleSteps; i++) this.shuffleStep();
     this.moves = 0;
     this.render();
   }
@@ -61,7 +69,7 @@ export class SlidingPuzzleGame extends BaseGame {
     wrap.className = "sp-wrap";
     const task = document.createElement("div");
     task.className = "sp-task";
-    task.textContent = `滑动方块，按 1-${this.n * this.n - 1} 排好～`;
+    task.innerHTML = `把数字按 1-${this.n * this.n - 1} 排好～<br><span class="sp-hint">只能滑<b>空格旁边</b>的方块</span>`;
     wrap.appendChild(task);
 
     const board = document.createElement("div");
@@ -116,7 +124,11 @@ export class SlidingPuzzleGame extends BaseGame {
             ? 2
             : 1;
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
-      this.trackTimeout(() => this.finishClear(stars), 700);
+      this.trackTimeout(() => {
+        this.roundsDone += 1;
+        if (this.roundsDone >= this.roundTotal) this.finishClear(stars);
+        else this.startRound();
+      }, 700);
     }
   }
 
@@ -132,7 +144,8 @@ export class SlidingPuzzleGame extends BaseGame {
 function SP_CSS(theme: string): string {
   return `
 .sp-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;}
-.sp-task{font-size:1.1rem;font-weight:800;}
+.sp-task{font-size:1.1rem;font-weight:800;text-align:center;line-height:1.5;}
+.sp-hint{font-size:.85rem;color:var(--ink-soft);font-weight:600;}
 .sp-board{position:relative;background:${theme};border-radius:16px;padding:6px;box-shadow:var(--shadow);}
 .sp-tile{position:absolute;width:70px;height:70px;margin:3px;font-size:1.8rem;font-weight:800;color:#fff;background:linear-gradient(160deg,#fff3,color-mix(in srgb,${theme} 80%,#000));border:none;border-radius:12px;box-shadow:var(--shadow);transition:left .12s ease,top .12s ease;}
 .sp-tile:active{transform:scale(.95);}

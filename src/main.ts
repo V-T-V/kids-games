@@ -15,10 +15,20 @@ import { initParticles, clearParticles } from "./core/particles.ts";
 import { unlockAudio } from "./core/audio.ts";
 import { hideMascot } from "./core/mascot.ts";
 import { renderLobby } from "./lobby/Lobby.ts";
+import { renderLearnCenter } from "./learn/LearnCenter.ts";
+import { renderLearnPath } from "./learn/LearnPath.ts";
 import { createGameShell, type ShellHandle } from "./games/shell.ts";
 import { openParentPanel } from "./ui/ParentPanel.ts";
+import { feedbackCount, FEEDBACK_EVENT } from "./core/feedback.ts";
+import { retryPending, isSyncReady } from "./core/sync.ts";
+import { LEARN_PATHS } from "./learn/paths.ts";
 import { Overlay } from "./ui/Overlay.ts";
-import { loadSave, unlockAchievement, writeSave } from "./core/storage.ts";
+import {
+  loadSave,
+  unlockAchievement,
+  writeSave,
+  ALL_GAME_IDS,
+} from "./core/storage.ts";
 import { showAchievement } from "./core/toast.ts";
 import { registerPwa } from "./core/pwa.ts";
 import {
@@ -26,140 +36,24 @@ import {
   checkMilestoneAchievements,
 } from "./core/achievements.ts";
 import { findGame } from "./games/registry.ts";
+import { pushRecent } from "./core/favorites.ts";
 import type { BaseGame } from "./core/engine.ts";
 import type { GameResult } from "./types.ts";
 
-/* 各游戏懒加载工厂（避免首屏加载全部游戏代码） */
-const GAME_FACTORIES: Record<string, () => Promise<BaseGame>> = {
-  "color-mixer": () =>
-    import("./games/color-mixer/index.ts").then((m) => m.create()),
-  "shape-match": () =>
-    import("./games/shape-match/index.ts").then((m) => m.create()),
-  "number-monster": () =>
-    import("./games/number-monster/index.ts").then((m) => m.create()),
-  "letter-bee": () =>
-    import("./games/letter-bee/index.ts").then((m) => m.create()),
-  "memory-flip": () =>
-    import("./games/memory-flip/index.ts").then((m) => m.create()),
-  "music-stairs": () =>
-    import("./games/music-stairs/index.ts").then((m) => m.create()),
-  "maze-adventure": () =>
-    import("./games/maze-adventure/index.ts").then((m) => m.create()),
-  "seek-find": () =>
-    import("./games/seek-find/index.ts").then((m) => m.create()),
-  "size-sort": () =>
-    import("./games/size-sort/index.ts").then((m) => m.create()),
-  jigsaw: () => import("./games/jigsaw/index.ts").then((m) => m.create()),
-  pattern: () => import("./games/pattern/index.ts").then((m) => m.create()),
-  "whack-mole": () =>
-    import("./games/whack-mole/index.ts").then((m) => m.create()),
-  doodle: () => import("./games/doodle/index.ts").then((m) => m.create()),
-  weather: () => import("./games/weather/index.ts").then((m) => m.create()),
-  clock: () => import("./games/clock/index.ts").then((m) => m.create()),
-  "animal-sound": () =>
-    import("./games/animal-sound/index.ts").then((m) => m.create()),
-  "color-sort": () =>
-    import("./games/color-sort/index.ts").then((m) => m.create()),
-  "connect-dots": () =>
-    import("./games/connect-dots/index.ts").then((m) => m.create()),
-  "shadow-match": () =>
-    import("./games/shadow-match/index.ts").then((m) => m.create()),
-  tangram: () => import("./games/tangram/index.ts").then((m) => m.create()),
-  "farm-math": () =>
-    import("./games/farm-math/index.ts").then((m) => m.create()),
-  balance: () => import("./games/balance/index.ts").then((m) => m.create()),
-  "robot-code": () =>
-    import("./games/robot-code/index.ts").then((m) => m.create()),
-  "dress-up": () => import("./games/dress-up/index.ts").then((m) => m.create()),
-  "fruit-catch": () =>
-    import("./games/fruit-catch/index.ts").then((m) => m.create()),
-  "link-match": () =>
-    import("./games/link-match/index.ts").then((m) => m.create()),
-  "feed-order": () =>
-    import("./games/feed-order/index.ts").then((m) => m.create()),
-  pinyin: () => import("./games/pinyin/index.ts").then((m) => m.create()),
-  antonym: () => import("./games/antonym/index.ts").then((m) => m.create()),
-  "sliding-puzzle": () =>
-    import("./games/sliding-puzzle/index.ts").then((m) => m.create()),
-  "color-reaction": () =>
-    import("./games/color-reaction/index.ts").then((m) => m.create()),
-  equation: () => import("./games/equation/index.ts").then((m) => m.create()),
-  "spot-diff": () =>
-    import("./games/spot-diff/index.ts").then((m) => m.create()),
-  "tidy-up": () => import("./games/tidy-up/index.ts").then((m) => m.create()),
-  "mini-sudoku": () =>
-    import("./games/mini-sudoku/index.ts").then((m) => m.create()),
-  "pipe-connect": () =>
-    import("./games/pipe-connect/index.ts").then((m) => m.create()),
-  "weight-sort": () =>
-    import("./games/weight-sort/index.ts").then((m) => m.create()),
-  "catch-star": () =>
-    import("./games/catch-star/index.ts").then((m) => m.create()),
-  "draw-along": () =>
-    import("./games/draw-along/index.ts").then((m) => m.create()),
-  emotion: () => import("./games/emotion/index.ts").then((m) => m.create()),
-  direction: () => import("./games/direction/index.ts").then((m) => m.create()),
-  length: () => import("./games/length/index.ts").then((m) => m.create()),
-  "more-less": () =>
-    import("./games/more-less/index.ts").then((m) => m.create()),
-  symmetry: () => import("./games/symmetry/index.ts").then((m) => m.create()),
-  rhythm: () => import("./games/rhythm/index.ts").then((m) => m.create()),
-  fishing: () => import("./games/fishing/index.ts").then((m) => m.create()),
-  "block-tower": () =>
-    import("./games/block-tower/index.ts").then((m) => m.create()),
-  "word-chain": () =>
-    import("./games/word-chain/index.ts").then((m) => m.create()),
-  "reverse-memory": () =>
-    import("./games/reverse-memory/index.ts").then((m) => m.create()),
-  claw: () => import("./games/claw/index.ts").then((m) => m.create()),
-  "bubble-shoot": () =>
-    import("./games/bubble-shoot/index.ts").then((m) => m.create()),
-  wheel: () => import("./games/wheel/index.ts").then((m) => m.create()),
-  pinball: () => import("./games/pinball/index.ts").then((m) => m.create()),
-  "guess-card": () =>
-    import("./games/guess-card/index.ts").then((m) => m.create()),
-  snake: () => import("./games/snake/index.ts").then((m) => m.create()),
-  "2048": () => import("./games/2048/index.ts").then((m) => m.create()),
-  "number-sequence": () =>
-    import("./games/number-sequence/index.ts").then((m) => m.create()),
-  "pinyin-puzzle": () =>
-    import("./games/pinyin-puzzle/index.ts").then((m) => m.create()),
-  radical: () => import("./games/radical/index.ts").then((m) => m.create()),
-  idiom: () => import("./games/idiom/index.ts").then((m) => m.create()),
-  "measure-word": () =>
-    import("./games/measure-word/index.ts").then((m) => m.create()),
-  "stroke-order": () =>
-    import("./games/stroke-order/index.ts").then((m) => m.create()),
-  homophone: () => import("./games/homophone/index.ts").then((m) => m.create()),
-  "similar-char": () =>
-    import("./games/similar-char/index.ts").then((m) => m.create()),
-  "word-classify": () =>
-    import("./games/word-classify/index.ts").then((m) => m.create()),
-  fraction: () => import("./games/fraction/index.ts").then((m) => m.create()),
-  "time-timeline": () =>
-    import("./games/time-timeline/index.ts").then((m) => m.create()),
-  thermometer: () =>
-    import("./games/thermometer/index.ts").then((m) => m.create()),
-  calendar: () => import("./games/calendar/index.ts").then((m) => m.create()),
-  money: () => import("./games/money/index.ts").then((m) => m.create()),
-  ruler: () => import("./games/ruler/index.ts").then((m) => m.create()),
-  "symmetry-axis": () =>
-    import("./games/symmetry-axis/index.ts").then((m) => m.create()),
-  "3d-shape": () => import("./games/3d-shape/index.ts").then((m) => m.create()),
-  "color-gradient": () =>
-    import("./games/color-gradient/index.ts").then((m) => m.create()),
-  spectrum: () => import("./games/spectrum/index.ts").then((m) => m.create()),
-  constellation: () =>
-    import("./games/constellation/index.ts").then((m) => m.create()),
-  "planet-orbit": () =>
-    import("./games/planet-orbit/index.ts").then((m) => m.create()),
-  ecosystem: () => import("./games/ecosystem/index.ts").then((m) => m.create()),
-  "weather-forecast": () =>
-    import("./games/weather-forecast/index.ts").then((m) => m.create()),
-  "magnet-maze": () =>
-    import("./games/magnet-maze/index.ts").then((m) => m.create()),
-  circuit: () => import("./games/circuit/index.ts").then((m) => m.create()),
-};
+/* 各游戏懒加载工厂：用 Vite 的 import.meta.glob 自动收集所有游戏模块，
+   新增游戏只需在 registry.ts 注册 + 创建目录，无需改 main.ts。 */
+const gameModules = import.meta.glob("./games/*/index.ts") as Record<
+  string,
+  () => Promise<{ create: () => BaseGame }>
+>;
+export const GAME_FACTORIES: Record<string, () => Promise<BaseGame>> =
+  Object.fromEntries(
+    Object.entries(gameModules).map(([path, loader]) => {
+      // ./games/color-mixer/index.ts → color-mixer
+      const id = path.split("/")[2]!;
+      return [id, () => loader().then((m) => m.create())];
+    }),
+  );
 
 const app = document.getElementById("app")!;
 const fxLayer = document.getElementById("fx-layer")!;
@@ -167,9 +61,16 @@ const parentBtn = document.getElementById("parent-btn")!;
 
 let currentShell: ShellHandle | null = null;
 let currentGame: BaseGame | null = null;
+/** 当前游戏的关卡进度（由 onProgress 回调更新，反馈上下文用） */
+let currentProgress: { current: number; total: number } = {
+  current: 0,
+  total: 0,
+};
 
 /** 退出当前游戏，清理一切。 */
 function teardownGame(): void {
+  // 关闭可能残留的结算/反馈 Overlay
+  document.querySelectorAll(".overlay").forEach((el) => el.remove());
   if (currentGame) {
     try {
       currentGame.destroy();
@@ -186,6 +87,9 @@ function teardownGame(): void {
   hideMascot();
 }
 
+/** 若游戏从学习路径进入，记录路径 id 供"返回"用（回路径而非大厅）。 */
+let learnOrigin: string | null = null;
+
 /** 渲染大厅。 */
 function showLobby(): void {
   teardownGame();
@@ -194,7 +98,10 @@ function showLobby(): void {
 }
 
 /** 加载并启动一个游戏。 */
+let loadToken = 0;
+
 async function showGame(gameId: string): Promise<void> {
+  const myToken = ++loadToken;
   teardownGame();
   app.classList.add("app--game");
   app.innerHTML = "";
@@ -211,13 +118,45 @@ async function showGame(gameId: string): Promise<void> {
   }
   try {
     const game = await factory();
-    const shell = createGameShell(app, gameId);
+    // 竞态守卫：如果在此期间又触发了新的导航，销毁这个游戏并放弃
+    if (myToken !== loadToken) {
+      try {
+        game.destroy();
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    // 再次清理（防止 await 期间有旧实例被赋值）
+    teardownGame();
+    currentProgress = { current: 0, total: 0 };
+    const backTarget = learnOrigin ? "learn/" + learnOrigin : undefined;
+    const shell = createGameShell(
+      app,
+      gameId,
+      () => {
+        // 反馈上下文提供者：结合游戏实例的 wrong/duration + 跟踪的关卡进度
+        const base = currentGame?.getFeedbackContext();
+        return {
+          round: currentProgress.current + 1,
+          right: currentProgress.current,
+          wrong: base?.wrong,
+          durationMs: base?.durationMs,
+        };
+      },
+      backTarget,
+    );
     currentShell = shell;
     currentGame = game;
+    // 记录「最近玩过」（大厅快捷区用）。失败（隐私模式）静默忽略。
+    pushRecent(gameId);
     // 注入通关结算回调：展示统一结算页 + 处理全局成就
     game.onGameClear = (result) => showClearOverlay(gameId, result);
-    // 注入进度回调：连接到 shell 的统一进度条
-    game.onProgress = (cur, total) => shell.setProgress(cur, total);
+    // 注入进度回调：连接到 shell 的统一进度条 + 跟踪关卡进度（反馈用）
+    game.onProgress = (cur, total) => {
+      currentProgress = { current: cur, total };
+      shell.setProgress(cur, total);
+    };
     // 用 shell.stage 作为游戏根
     shell.stage.id = "game-root";
     game.start(shell.stage);
@@ -279,6 +218,27 @@ function showClearOverlay(gameId: string, result: GameResult): void {
     body.innerHTML += `<div style="margin-top:14px;font-size:1.1rem;color:var(--c-green);font-weight:800;">🎉 解锁了 ${newAch.length} 个新成就！</div>`;
   }
 
+  // 找"下一个游戏"：若当前游戏在某条学习路径里，返回路径中下一关；
+  // 否则返回一个随机的未玩过游戏（鼓励探索）。
+  function findNextGame(): string | null {
+    // 1. 学习路径里的下一关
+    for (const path of LEARN_PATHS) {
+      const idx = path.games.indexOf(gameId as never);
+      if (idx >= 0 && idx < path.games.length - 1) {
+        return path.games[idx + 1] as string;
+      }
+    }
+    // 2. 随机未玩过游戏
+    const unplayed = ALL_GAME_IDS.filter(
+      (id) => !save.progress[id]?.cleared && id !== gameId,
+    );
+    if (unplayed.length > 0) {
+      return unplayed[Math.floor(Math.random() * unplayed.length)] ?? null;
+    }
+    return null;
+  }
+  const nextGame = findNextGame();
+
   const overlay = new Overlay({
     title: "太棒啦！",
     emoji: meta?.icon ?? "🎉",
@@ -300,16 +260,50 @@ function showClearOverlay(gameId: string, result: GameResult): void {
         navigate("");
       },
     },
+    // 若有下一个游戏，加"下一个"按钮
+    ...(nextGame
+      ? {
+          tertiary: {
+            text: findGame(nextGame) ? "下一个 →" : "试个新的 →",
+            icon: findGame(nextGame)?.icon ?? "🎯",
+            onClick: () => {
+              overlay.destroy();
+              navigate(nextGame);
+            },
+          },
+        }
+      : {}),
   });
   overlay.show();
 }
 
 function handleRoute(route: string): void {
   if (!route) {
+    learnOrigin = null;
     showLobby();
+  } else if (route === "learn") {
+    learnOrigin = null;
+    showLearnCenter();
+  } else if (route.startsWith("learn/")) {
+    learnOrigin = route.slice("learn/".length);
+    showLearnPath(learnOrigin);
   } else {
     void showGame(route);
   }
+}
+
+/** 渲染学习中心（路由 learn）。 */
+function showLearnCenter(): void {
+  teardownGame();
+  app.classList.remove("app--game");
+  renderLearnCenter(app);
+}
+
+/** 渲染某条学习路径详情（路由 learn/某个 id）。 */
+function showLearnPath(pathId: string): void {
+  teardownGame();
+  app.classList.remove("app--game");
+  renderLearnPath(app, pathId);
 }
 
 function init(): void {
@@ -328,6 +322,21 @@ function init(): void {
 
   // 家长按钮
   parentBtn.addEventListener("click", () => openParentPanel());
+
+  // 反馈角标：监听 feedback-updated 事件，刷新齿轮按钮上的未处理反馈数
+  const updateFeedbackBadge = (): void => {
+    const count = feedbackCount();
+    parentBtn.setAttribute("data-feedback-count", String(count));
+  };
+  updateFeedbackBadge();
+  window.addEventListener(FEEDBACK_EVENT, updateFeedbackBadge);
+
+  // 反馈同步：启动时补推上次没成功的 pending；联网时也触发一次。
+  // retryPending 内部会自检 sync 是否就绪，未配置则直接返回 0，零开销。
+  if (isSyncReady()) {
+    void retryPending();
+  }
+  window.addEventListener("online", () => void retryPending());
 
   // 路由
   onRoute(handleRoute);

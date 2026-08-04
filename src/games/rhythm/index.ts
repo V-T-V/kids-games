@@ -24,7 +24,7 @@ export class RhythmGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -42,15 +42,12 @@ export class RhythmGame extends BaseGame {
   }
 
   private len(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.step = 0;
     this.seq = Array.from({ length: this.len() }, () => randInt(0, 3));
 
@@ -74,6 +71,19 @@ export class RhythmGame extends BaseGame {
       this.drums.push(b);
     }
     wrap.appendChild(kit);
+
+    // 「再听一遍」按钮：序列只播一次，孩子没听清就没机会了——补上重听入口
+    const replay = document.createElement("button");
+    replay.type = "button";
+    replay.className = "rh-replay";
+    replay.textContent = "🔁 再听一遍";
+    replay.addEventListener("click", () => {
+      if (this.playing) return; // 播放中不重复触发
+      const t = this.root.querySelector("#rh-task");
+      if (t) t.textContent = "听鼓点，记住顺序…";
+      this.playSeq();
+    });
+    wrap.appendChild(replay);
     this.root.appendChild(wrap);
 
     // 播放序列
@@ -158,8 +168,19 @@ export class RhythmGame extends BaseGame {
       title: "休息一下～",
       emoji: "🌙",
       variant: "rest",
-      body: "再听一遍鼓点～",
-      primary: { text: "继续", icon: "🎈", onClick: () => ov.destroy() },
+      body: "没听清没关系，再听一遍吧～",
+      primary: {
+        text: "再听一遍",
+        icon: "🔁",
+        onClick: () => {
+          ov.destroy();
+          // 重置进度并重播当前序列（而非跳到新题）
+          this.step = 0;
+          const t = this.root.querySelector("#rh-task");
+          if (t) t.textContent = "听鼓点，记住顺序…";
+          this.playSeq();
+        },
+      },
       secondary: {
         text: "回大厅",
         icon: "🏠",
@@ -185,6 +206,8 @@ function RH_CSS(theme: string): string {
   return `
 .rh-wrap{display:flex;flex-direction:column;align-items:center;gap:24px;width:min(440px,100%);}
 .rh-task{font-size:1.2rem;font-weight:800;}
+.rh-replay{min-height:48px;padding:0 22px;border-radius:999px;background:#fff;font-weight:700;font-size:1rem;box-shadow:var(--shadow);}
+.rh-replay:active{transform:scale(.94);}
 .rh-kit{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
 .rh-drum{width:110px;height:110px;border-radius:50%;border:none;box-shadow:var(--shadow);transition:transform .1s;}
 .rh-drum--0{background:radial-gradient(circle at 35% 30%,#ff8a80,#ff5252);}

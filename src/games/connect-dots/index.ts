@@ -74,7 +74,7 @@ export class ConnectDotsGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -84,6 +84,7 @@ export class ConnectDotsGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.next = 1;
     const shape = SHAPES[this.roundsDone % SHAPES.length]!;
     const maxDots =
@@ -216,7 +217,7 @@ function CD_CSS(theme: string): string {
 .cd-line{fill:none;stroke:${theme};stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
 .cd-hidden{fill:none;stroke:#eee;stroke-width:2;opacity:0;}
 .cd-svg--reveal .cd-hidden{stroke:${theme};stroke-width:5;opacity:.4;animation:cd-flash .5s ease;}
-.cd-dot{position:absolute;width:32px;height:32px;border-radius:50%;background:${theme};color:#fff;font-weight:800;border:none;box-shadow:var(--shadow);z-index:2;}
+.cd-dot{position:absolute;width:40px;height:40px;border-radius:50%;background:${theme};color:#fff;font-weight:800;border:none;box-shadow:var(--shadow);z-index:2;}
 .cd-dot:active{transform:scale(.9);}
 .cd-dot--done{background:#d4f4dd;color:var(--ink);}
 @keyframes cd-flash{0%{opacity:0;stroke-width:8}100%{opacity:.4;stroke-width:5}}

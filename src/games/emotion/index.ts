@@ -30,11 +30,12 @@ export class EmotionGame extends BaseGame {
     super("emotion");
   }
   private roundsDone = 0;
+  private answered = false;
   private roundTotal = 0;
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -44,6 +45,8 @@ export class EmotionGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.answered = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const target = sample(SCENES);
     const distract: string[] = [];
     while (distract.length < 3) {
@@ -80,6 +83,8 @@ export class EmotionGame extends BaseGame {
 
   private choose(c: string, mood: string, btn: HTMLButtonElement): void {
     if (c === mood) {
+      if (this.answered) return;
+      this.answered = true;
       sfxPop();
       btn.classList.add("em-opt--done");
       const r = btn.getBoundingClientRect();

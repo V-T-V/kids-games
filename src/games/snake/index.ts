@@ -2,12 +2,13 @@
    独特点：圆角渐变蛇身（每节颜色渐变）+ 发光食物 + 滑动方向按钮（儿童友好）。
    视觉：Canvas 绘制，蛇头有眼睛，食物脉动发光。
    难度=网格大小 + 速度（easy 12格慢 / medium 14格 / hard 16格快）。
-   通关=吃到目标数量食物。用 setInterval 驱动，unmount 必须 clearInterval。
+   通关=吃到目标数量食物。用 createIntervalLoop 驱动，unmount 调 stop()。
    同时支持键盘方向键（家长体验）。 */
 
 import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { burst } from "../../core/particles.ts";
+import { createIntervalLoop } from "../../core/loop.ts";
 import { getCssVar } from "../../lobby/util.ts";
 
 type Dir = "up" | "down" | "left" | "right";
@@ -23,8 +24,10 @@ export class SnakeGame extends BaseGame {
 
   private canvas!: HTMLCanvasElement;
   private c2d!: CanvasRenderingContext2D;
-  private timer: number | null = null;
+  private stop?: () => void;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   private grid = 12;
   private cell = 0;
@@ -45,14 +48,15 @@ export class SnakeGame extends BaseGame {
     this.target =
       this.difficulty === "easy" ? 5 : this.difficulty === "medium" ? 7 : 10;
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.setup();
   }
   protected unmount(): void {
     this.over = true;
-    if (this.timer !== null) {
-      window.clearInterval(this.timer);
-      this.timer = null;
-    }
+    this.stop?.();
+    this.stop = undefined;
     if (this.onKey) {
       window.removeEventListener("keydown", this.onKey);
       this.onKey = null;
@@ -60,6 +64,7 @@ export class SnakeGame extends BaseGame {
   }
 
   private setup(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     // 先移除上一轮的 keydown 监听，避免每次死亡重开累积 window 监听器
     if (this.onKey) {
       window.removeEventListener("keydown", this.onKey);
@@ -112,7 +117,7 @@ export class SnakeGame extends BaseGame {
         : this.difficulty === "medium"
           ? 170
           : 130;
-    this.timer = window.setInterval(() => this.tick(), speed);
+    this.stop = createIntervalLoop(speed, () => this.tick());
 
     // 键盘
     this.onKey = (e: KeyboardEvent): void => {
@@ -236,13 +241,22 @@ export class SnakeGame extends BaseGame {
       if (eat) eat.textContent = String(this.eaten);
       if (this.eaten >= this.target) {
         this.over = true;
-        if (this.timer !== null) {
-          window.clearInterval(this.timer);
-          this.timer = null;
+        if (this.stop) {
+          this.stop();
+          this.stop = undefined;
         }
         // 算星：按死亡前是否还有失误空间——这里通关必 3 星，加难度系数
         const stars = 3;
-        this.trackTimeout(() => this.finishClear(stars), 600);
+        this.resetWrongStreak();
+        this.roundsDone += 1;
+        this.reportProgress(this.roundsDone, this.roundTotal);
+        this.trackTimeout(() => {
+          if (this.roundsDone >= this.roundTotal) {
+            this.finishClear(stars);
+          } else {
+            this.setup();
+          }
+        }, 600);
         return;
       }
     } else {
@@ -253,9 +267,9 @@ export class SnakeGame extends BaseGame {
 
   private gameOver(): void {
     this.over = true;
-    if (this.timer !== null) {
-      window.clearInterval(this.timer);
-      this.timer = null;
+    if (this.stop) {
+      this.stop();
+      this.stop = undefined;
     }
     this.onWrong();
     // 红色闪烁后重开

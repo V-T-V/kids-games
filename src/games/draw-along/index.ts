@@ -62,9 +62,14 @@ export class DrawAlongGame extends BaseGame {
   private samples = 0;
   private drawing = false;
   private unbind: (() => void) | null = null;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startRound();
   }
   protected unmount(): void {
@@ -74,6 +79,7 @@ export class DrawAlongGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.errors = 0;
     this.samples = 0;
     const idx =
@@ -89,9 +95,13 @@ export class DrawAlongGame extends BaseGame {
 
     this.canvas = document.createElement("canvas");
     this.canvas.className = "da-canvas";
-    this.canvas.width = 300;
-    this.canvas.height = 240;
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = 300 * dpr;
+    this.canvas.height = 240 * dpr;
+    this.canvas.style.width = "300px";
+    this.canvas.style.height = "240px";
     this.c2d = this.canvas.getContext("2d")!;
+    this.c2d.scale(dpr, dpr);
     this.drawTarget();
     wrap.appendChild(this.canvas);
 
@@ -176,7 +186,16 @@ export class DrawAlongGame extends BaseGame {
     const stars = accuracy > 0.85 ? 3 : accuracy > 0.6 ? 2 : 1;
     const r = this.canvas.getBoundingClientRect();
     this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
-    this.finishClear(stars);
+    this.resetWrongStreak();
+    this.roundsDone += 1;
+    this.reportProgress(this.roundsDone, this.roundTotal);
+    this.trackTimeout(() => {
+      if (this.roundsDone >= this.roundTotal) {
+        this.finishClear(stars);
+      } else {
+        this.startRound();
+      }
+    }, 600);
   }
 
   private injectStyle(): void {

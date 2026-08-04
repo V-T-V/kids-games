@@ -168,7 +168,7 @@ export class SymmetryAxisGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -179,6 +179,7 @@ export class SymmetryAxisGame extends BaseGame {
   private startRound(): void {
     this.locked = false;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     // 难度过滤：easy 用 1/2/-1；medium 加 0/3/4；hard 全部
     const pool =
       this.difficulty === "easy"

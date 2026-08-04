@@ -1,0 +1,200 @@
+{
+  "runId": "430c232a-64c6-4c82-83ca-34abc08ed609",
+  "caseName": "kids-games-02-all-games-mount",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "failed",
+  "startedAt": 1785676858266,
+  "endedAt": 1785677417249,
+  "durationMs": 558983,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 0,
+      "target": "web",
+      "actionType": "waitFor",
+      "status": "passed",
+      "durationMs": 3415,
+      "data": {}
+    },
+    {
+      "index": 1,
+      "stepGroup": 1,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 173,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 2,
+      "stepGroup": 2,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 37586,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 3,
+      "stepGroup": 3,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 36600,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 4,
+      "stepGroup": 4,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 36593,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 5,
+      "stepGroup": 5,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 36816,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 6,
+      "stepGroup": 6,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#6 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 7,
+      "stepGroup": 7,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#7 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 8,
+      "stepGroup": 8,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "步骤异常: 步骤 #8 action 包含未解析变量：$.script"
+    },
+    {
+      "index": 9,
+      "stepGroup": 9,
+      "target": "web",
+      "actionType": "screenshot",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#9 screenshot @web超时 (120000ms)"
+    },
+    {
+      "index": 10,
+      "stepGroup": 100010,
+      "target": "web",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "driver shutdown 失败：driver web shutdown超时 (6367ms)"
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m2540\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m6366\u001b[22m/\u001b[39m\n",
+      "id": "7a4767e1-2c93-4ab3-95d5-6d3bbfb5520d",
+      "createdAt": 1785677399827
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://0",
+      "content": "[vite] connecting...",
+      "id": "5dd09d0a-d1c9-4084-bb8f-0ae6a3dfec6d",
+      "createdAt": 1785677399828
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://1",
+      "content": "[vite] connected.",
+      "id": "27ec8a3c-6d07-46ef-92b5-27d62bdad22e",
+      "createdAt": 1785677399828
+    },
+    {
+      "id": "report-4",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-430c232a-64c6-4c82-83ca-34abc08ed609.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785677417407
+    },
+    {
+      "id": "report-5",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-430c232a-64c6-4c82-83ca-34abc08ed609.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785677417416
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-430c232a-64c6-4c82-83ca-34abc08ed609.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785677417426
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785677417428
+    },
+    {
+      "id": "report-8",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785677417458
+    }
+  ],
+  "comparisons": [],
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "dcb7e6e589b30415c5ac4f4b65fc323eccda45191e2619b5acc6b5e3a82eee3d",
+    "projectSuite": "smoke"
+  }
+}

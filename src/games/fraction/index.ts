@@ -28,7 +28,7 @@ export class FractionGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.slices =
       this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 4 : 6;
     this.injectStyle();
@@ -59,6 +59,7 @@ export class FractionGame extends BaseGame {
   private startRound(): void {
     this.locked = false;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.currentQ = this.makeQuestion();
     // 模式 B 时高亮的块数 = numerator（从 prompt 解析不便，单独存）
     const highlightN = this.currentQ.prompt.startsWith("高亮")
@@ -66,20 +67,20 @@ export class FractionGame extends BaseGame {
       : 0;
 
     const wrap = document.createElement("div");
-    wrap.className = "fr-wrap";
+    wrap.className = "frc-wrap";
 
     const task = document.createElement("div");
-    task.className = "fr-task";
+    task.className = "frc-task";
     task.textContent = `${this.currentQ.prompt}（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     // 披萨（SVG 扇形）
     const pizzaBox = document.createElement("div");
-    pizzaBox.className = "fr-pizza-box";
+    pizzaBox.className = "frc-pizza-box";
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("viewBox", "0 0 200 200");
-    svg.setAttribute("class", "fr-pizza");
+    svg.setAttribute("class", "frc-pizza");
     const cx = 100;
     const cy = 100;
     const r = 92;
@@ -104,7 +105,10 @@ export class FractionGame extends BaseGame {
       path.setAttribute("fill", isHi ? "#fff3b0" : palette[i]!);
       path.setAttribute("stroke", "#b5651d");
       path.setAttribute("stroke-width", "2");
-      path.setAttribute("class", isHi ? "fr-slice fr-slice--hi" : "fr-slice");
+      path.setAttribute(
+        "class",
+        isHi ? "frc-slice frc-slice--hi" : "frc-slice",
+      );
       svg.appendChild(path);
     }
     // 中心小圆（芝士）
@@ -119,7 +123,7 @@ export class FractionGame extends BaseGame {
 
     // 选项
     const opts = document.createElement("div");
-    opts.className = "fr-opts";
+    opts.className = "frc-opts";
     const pool =
       highlightN > 0
         ? // 模式 B：选分母
@@ -132,7 +136,7 @@ export class FractionGame extends BaseGame {
     shuffle(choices).forEach((v) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "fr-choice";
+      b.className = "frc-choice";
       b.textContent = String(v);
       b.addEventListener("click", () => this.choose(v, b));
       opts.appendChild(b);
@@ -157,7 +161,7 @@ export class FractionGame extends BaseGame {
     if (v === this.currentQ.answer) {
       this.locked = true;
       sfxPop();
-      btn.classList.add("fr-choice--done");
+      btn.classList.add("frc-choice--done");
       const r = btn.getBoundingClientRect();
       this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
       this.resetWrongStreak();
@@ -168,9 +172,9 @@ export class FractionGame extends BaseGame {
         else this.startRound();
       }, 1000);
     } else {
-      btn.classList.add("fr-choice--wrong");
+      btn.classList.add("frc-choice--wrong");
       const paused = this.onWrong();
-      this.trackTimeout(() => btn.classList.remove("fr-choice--wrong"), 400);
+      this.trackTimeout(() => btn.classList.remove("frc-choice--wrong"), 400);
       if (paused) this.showRest();
     }
   }
@@ -195,9 +199,9 @@ export class FractionGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("fr-style")) return;
+    if (document.getElementById("frc-style")) return;
     const st = document.createElement("style");
-    st.id = "fr-style";
+    st.id = "frc-style";
     st.textContent = FR_CSS(getCssVar("--c-red"));
     document.head.appendChild(st);
   }
@@ -205,20 +209,20 @@ export class FractionGame extends BaseGame {
 
 function FR_CSS(theme: string): string {
   return `
-.fr-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;width:min(440px,100%);}
-.fr-task{font-size:1.18rem;font-weight:800;text-align:center;line-height:1.5;}
-.fr-pizza-box{filter:drop-shadow(0 12px 24px rgba(0,0,0,.18));animation:fr-pop .5s ease;}
-.fr-pizza{width:min(280px,72vw);height:auto;display:block;}
-.fr-slice{transition:transform .25s ease;transform-origin:100px 100px;cursor:default;}
-.fr-slice--hi{animation:fr-glow 1.2s ease-in-out infinite;}
-@keyframes fr-glow{0%,100%{opacity:1}50%{opacity:.55}}
-.fr-opts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-.fr-choice{min-width:72px;height:72px;font-size:1.7rem;font-weight:800;border-radius:20px;background:#fff;color:var(--ink);box-shadow:var(--shadow);transition:transform .1s ease;}
-.fr-choice:active{transform:scale(.94);}
-.fr-choice--done{background:${theme};color:#fff;animation:fr-pop .4s ease;}
-.fr-choice--wrong{animation:fr-shake .4s ease;}
-@keyframes fr-pop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
-@keyframes fr-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.frc-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;width:min(440px,100%);}
+.frc-task{font-size:1.18rem;font-weight:800;text-align:center;line-height:1.5;}
+.frc-pizza-box{filter:drop-shadow(0 12px 24px rgba(0,0,0,.18));animation:frc-pop .5s ease;}
+.frc-pizza{width:min(280px,72vw);height:auto;display:block;}
+.frc-slice{transition:transform .25s ease;transform-origin:100px 100px;cursor:default;}
+.frc-slice--hi{animation:frc-glow 1.2s ease-in-out infinite;}
+@keyframes frc-glow{0%,100%{opacity:1}50%{opacity:.55}}
+.frc-opts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.frc-choice{min-width:72px;height:72px;font-size:1.7rem;font-weight:800;border-radius:20px;background:#fff;color:var(--ink);box-shadow:var(--shadow);transition:transform .1s ease;}
+.frc-choice:active{transform:scale(.94);}
+.frc-choice--done{background:${theme};color:#fff;animation:frc-pop .4s ease;}
+.frc-choice--wrong{animation:frc-shake .4s ease;}
+@keyframes frc-pop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes frc-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 `;
 }
 

@@ -1,0 +1,81 @@
+{
+  "runId": "b4ddc2fb-b1ad-407c-bf82-a2adad13741c",
+  "caseName": "kids-games-02-all-games-mount",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "failed",
+  "startedAt": 1785680821715,
+  "endedAt": 1785680866893,
+  "durationMs": 45178,
+  "steps": [],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "trace",
+      "target": "web",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\web-x-0ee3f75e.trace.zip",
+      "label": "Playwright Web trace",
+      "contentType": "application/zip",
+      "id": "1ed42f10-e753-4091-a7a3-acfac30825f4",
+      "createdAt": 1785680862656
+    },
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m2304\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m6912\u001b[22m/\u001b[39m\n",
+      "id": "e012c154-38db-444c-8919-b4b56d35b2a5",
+      "createdAt": 1785680865677
+    },
+    {
+      "id": "report-3",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-b4ddc2fb-b1ad-407c-bf82-a2adad13741c.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785680867120
+    },
+    {
+      "id": "report-4",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-b4ddc2fb-b1ad-407c-bf82-a2adad13741c.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785680867125
+    },
+    {
+      "id": "report-5",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-b4ddc2fb-b1ad-407c-bf82-a2adad13741c.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785680867131
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785680867133
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785680867136
+    }
+  ],
+  "comparisons": [],
+  "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:6912/\", waiting until \"load\"\u001b[22m\n",
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "9530264f59cd03ac4531ec9ef0cf8217819e5fff36dac6e4e7312424d4274390",
+    "projectSuite": "smoke"
+  }
+}

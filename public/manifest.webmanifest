@@ -1,7 +1,7 @@
 {
   "name": "童趣游戏屋",
   "short_name": "游戏屋",
-  "description": "为 3~6 岁儿童设计的 81 个寓教于乐网页小游戏，支持本地进度与离线安装。",
+  "description": "为 3~6 岁儿童设计的 575 个寓教于乐网页小游戏，支持本地进度与离线安装。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

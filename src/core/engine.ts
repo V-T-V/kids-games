@@ -23,10 +23,19 @@ import {
   mascotRest,
   mascotWrong,
 } from "./mascot.ts";
-import { sfxClear, sfxCorrect, sfxWrong } from "./audio.ts";
+import { sfxClear, sfxCorrect, sfxPop, sfxWrong } from "./audio.ts";
 import { burst, confetti } from "./particles.ts";
-import { showAchievement } from "./toast.ts";
+import { showAchievement, showToast } from "./toast.ts";
 import { getAchievementMeta } from "./achievements.ts";
+import { resolveDifficulty } from "./adaptive.ts";
+import { countHardFeedback } from "./feedback.ts";
+
+/** 难度档 → 中文（toast 提示用）。 */
+const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  easy: "简单",
+  medium: "普通",
+  hard: "困难",
+};
 
 /** 游戏上下文：基类向子类暴露的能力集合。 */
 export interface GameContext {
@@ -52,11 +61,21 @@ export abstract class BaseGame {
   private wrongStreak = 0;
   /** 本局累计答错总次数（用于动态算星，不清零）。 */
   protected wrongCount = 0;
+  /** 当前连击数（连续答对不中断）。 */
+  private combo = 0;
   private startedAt = 0;
+  /**
+   * 最近一次 onCorrect 的时间戳。
+   * 用于"答对后宽限期"：孩子在答对后的过关动画（通常 1~1.2s）期间
+   * 的误触点击不应计入 wrongCount，避免无辜扣星。
+   */
+  private lastCorrectAt = 0;
   /** 是否已结算（幂等锁，防止重复 finishClear）。 */
   private finished = false;
   /** 子类注册的 pending 定时器，unmount 时统一清理。 */
   private pendingTimers: number[] = [];
+  /** 本局注入的 <style> 标签 id 列表，destroy 时清理避免 head 累积。 */
+  private injectedStyles: string[] = [];
 
   constructor(gameId: GameId) {
     this.gameId = gameId;
@@ -75,11 +94,35 @@ export abstract class BaseGame {
   start(container: HTMLElement, forceDifficulty?: Difficulty): void {
     const save = loadSave();
     const settings = save.settings;
-    this.difficulty =
-      forceDifficulty ??
-      settings.lockedDifficulty ??
-      save.progress[this.gameId].bestDifficulty ??
-      "easy";
+    const progress = save.progress[this.gameId];
+    // 难度解析：强制 > 家长锁 > 自适应(基于近局表现) > 历史最高 > easy
+    const prevDifficulty =
+      progress.recentResults.length > 0
+        ? progress.recentResults[progress.recentResults.length - 1]!.difficulty
+        : (progress.bestDifficulty ?? "easy");
+    const suggested = resolveDifficulty(
+      settings.lockedDifficulty,
+      progress.recentResults,
+      progress.bestDifficulty,
+      countHardFeedback(this.gameId),
+    );
+    this.difficulty = forceDifficulty ?? suggested;
+    // 自适应升降档时弹 toast 提示（仅当非家长锁定、非强制时）
+    if (
+      !forceDifficulty &&
+      !settings.lockedDifficulty &&
+      this.difficulty !== prevDifficulty &&
+      progress.recentResults.length > 0
+    ) {
+      showToast(
+        `难度调整为「${DIFFICULTY_LABEL[this.difficulty]}」`,
+        this.difficulty === "hard"
+          ? "🔥"
+          : this.difficulty === "easy"
+            ? "🌱"
+            : "⭐",
+      );
+    }
     this.root = container;
     this.ctx = {
       difficulty: this.difficulty,
@@ -88,6 +131,7 @@ export abstract class BaseGame {
     };
     this.wrongStreak = 0;
     this.wrongCount = 0;
+    this.combo = 0;
     this.finished = false;
     this.startedAt = Date.now();
     this.mount();
@@ -95,23 +139,57 @@ export abstract class BaseGame {
 
   /** 销毁游戏。 */
   destroy(): void {
-    this.clearPending();
+    // 先 unmount（让子类有机会注销监听器/定时器），再清 pending 定时器，
+    // 这样子类 unmount 内通过 trackTimeout 注册的清理回调也能被一并取消。
     try {
       this.unmount();
     } finally {
+      this.clearPending();
       this.root.innerHTML = "";
+      // 清理本局注入的 <style> 标签，避免 head 累积（大量游戏切换会累积 CSS）。
+      // 历史上绝大多数游戏自写 injectStyle() 用 getElementById 防重，不走 injectGameStyle，
+      // 因此 injectedStyles 常为空。这里兜底：移除所有 id 以 "-style" 结尾的游戏专属样式。
+      // （全局样式由 Vite 注入无 id；唯一例外 fb-style 是长生命周期反馈样式，单独保留。）
+      for (const sid of this.injectedStyles) {
+        document.getElementById(sid)?.remove();
+      }
+      this.injectedStyles = [];
+      document
+        .querySelectorAll('style[id$="-style"]:not(#fb-style)')
+        .forEach((el) => el.remove());
     }
+  }
+
+  /**
+   * 注入专属 CSS（防重复 + 自动追踪清理）。
+   * 子类应优先用这个替代手写 getElementById + appendChild。
+   * @param id style 标签的 id（如 "bw-style"）
+   * @param css CSS 字符串
+   */
+  protected injectGameStyle(id: string, css: string): void {
+    if (document.getElementById(id)) return;
+    const st = document.createElement("style");
+    st.id = id;
+    st.textContent = css;
+    document.head.appendChild(st);
+    this.injectedStyles.push(id);
   }
 
   /**
    * 注册一个会被 unmount 自动清理的 setTimeout。
    * 子类应优先用这个而非裸 window.setTimeout，避免销毁后回调泄漏。
+   * 默认在游戏已结算（finished）后不触发，避免残留的游戏内逻辑回调。
+   * @param evenIfFinished 设为 true 则即使已结算也触发（用于结算页等"必须在结束后执行"的回调）
    * 返回 timer id。
    */
-  protected trackTimeout(fn: () => void, ms: number): number {
+  protected trackTimeout(
+    fn: () => void,
+    ms: number,
+    evenIfFinished = false,
+  ): number {
     const id = window.setTimeout(() => {
       this.pendingTimers = this.pendingTimers.filter((t) => t !== id);
-      if (!this.finished) fn();
+      if (evenIfFinished || !this.finished) fn();
     }, ms);
     this.pendingTimers.push(id);
     return id;
@@ -127,9 +205,22 @@ export abstract class BaseGame {
 
   /** 答对时调用：播放音效、粒子、吉祥物夸赞。 */
   protected onCorrect(x?: number, y?: number): void {
+    this.combo += 1;
+    this.lastCorrectAt = Date.now();
     sfxCorrect();
     if (x != null && y != null) burst(x, y);
     mascotCorrect();
+    // 连击里程碑：5/10 连击时额外粒子奖励（不弹文字提示，避免遮挡干扰）
+    if (this.combo >= 10) {
+      if (x != null && y != null) {
+        burst(x, y, 30);
+        burst(x - 40, y, 10);
+        burst(x + 40, y, 10);
+      }
+      sfxPop();
+    } else if (this.combo >= 5) {
+      if (x != null && y != null) burst(x, y, 12);
+    }
   }
 
   /**
@@ -142,16 +233,37 @@ export abstract class BaseGame {
   }
 
   /**
+   * 获取当前游戏上下文（供反馈系统附带调试信息）。
+   * main.ts 在创建反馈对话框时调用，让反馈带上"答错几次/已玩时长"。
+   * 关卡进度由 main.ts 通过 onProgress 回调单独跟踪（因 roundsDone 是子类私有）。
+   */
+  getFeedbackContext(): { wrong: number; durationMs: number } {
+    return {
+      wrong: this.wrongCount,
+      durationMs: Date.now() - this.startedAt,
+    };
+  }
+
+  /**
    * 答错时调用：温柔提示，累加连错计数。
    * 当启用休息护盾且连续答错 >=3 次时，触发休息提示。
    * 返回是否触发了休息（游戏可据此暂停）。
+   *
+   * 宽限期：若距最近一次 onCorrect 不足 1.5s（典型过关动画时长），
+   * 视为孩子在"答对后动画期间"的误触，不计入 wrongCount、不触发休息护盾，
+   * 避免已经答对却被无辜扣星/打断。
    */
   protected onWrong(): boolean {
+    const inGrace =
+      this.lastCorrectAt > 0 && Date.now() - this.lastCorrectAt < 1500;
     sfxWrong();
     mascotWrong();
-    this.wrongStreak += 1;
-    this.wrongCount += 1;
-    if (this.ctx.settings.restShield && this.wrongStreak >= 3) {
+    this.combo = 0;
+    if (!inGrace) {
+      this.wrongStreak += 1;
+      this.wrongCount += 1;
+    }
+    if (!inGrace && this.ctx.settings.restShield && this.wrongStreak >= 3) {
       this.wrongStreak = 0;
       mascotRest();
       return true;
@@ -193,9 +305,9 @@ export abstract class BaseGame {
     confetti(90);
     mascotClear();
     this.afterClear(save, result);
-    // 延迟弹出结算页，让彩纸和庆祝先展现
+    // 延迟弹出结算页，让彩纸和庆祝先展现。用 evenIfFinished 让回调在结算后仍触发。
     const r = result;
-    this.trackTimeout(() => this.onGameClear?.(r), 1400);
+    this.trackTimeout(() => this.onGameClear?.(r), 1400, true);
     return result;
   }
 

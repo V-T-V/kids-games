@@ -28,12 +28,16 @@ export class ColorSortGame extends BaseGame {
   constructor() {
     super("color-sort");
   }
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbinds: (() => void)[] = [];
   private baskets: HTMLDivElement[] = [];
   private items: Item[] = [];
   private remaining = 0;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -45,10 +49,12 @@ export class ColorSortGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.unbinds.forEach((u) => u());
     this.unbinds = [];
+    this.items = [];
     const groupCount =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const perGroup = this.difficulty === "hard" ? 4 : 3;
     const groups = shuffle(GROUPS).slice(0, groupCount);
 
@@ -56,7 +62,7 @@ export class ColorSortGame extends BaseGame {
     wrap.className = "cs-wrap";
     const task = document.createElement("div");
     task.className = "cs-task";
-    task.textContent = "把水果放进同颜色的篮子～";
+    task.innerHTML = `把水果放进同颜色的篮子～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     // 物品区
@@ -155,10 +161,14 @@ export class ColorSortGame extends BaseGame {
         this.onCorrect(r.left + r.width / 2, r.top);
         this.resetWrongStreak();
         if (this.remaining <= 0) {
-          this.trackTimeout(
-            () => this.finishClear(starsByAccuracy(this.wrongCount)),
-            1000,
-          );
+          this.trackTimeout(() => {
+            this.roundsDone += 1;
+            if (this.roundsDone >= this.roundTotal) {
+              this.finishClear(starsByAccuracy(this.wrongCount));
+            } else {
+              this.startRound();
+            }
+          }, 1000);
         }
       } else {
         // 归位

@@ -1,0 +1,87 @@
+name: kids-games-01-lobby-and-games
+project: kids-games
+mode: data-flow
+env: kids-games-local
+description: |
+  童趣游戏屋回归基线：启动 Vite dev server，验证
+  (1) 大厅渲染全部游戏卡片（≥500）
+  (2) 大厅副标题含游戏总数
+  (3) 一批代表游戏能加载出可玩内容（stage 非空、不在大厅）
+  覆盖新增的 8 个游戏 + 重构的步骤排序游戏 + 数学/认知代表。
+tags: [kids-games, smoke, web, regression]
+
+targets:
+  frontend:
+    type: cli
+    launch:
+      command: node
+      args: ["${VITE_ENTRY}", "--host", "127.0.0.1", "--port", "${WEB_PORT}", "--strictPort"]
+      cwd: "${VITE_CWD}"
+      readyWhen:
+        kind: http
+        url: "${WEB_URL}"
+        status: 200
+        timeoutMs: 30000
+  web:
+    type: web
+    connect:
+      url: "${WEB_URL}"
+      capabilities:
+        headless: true
+        # Vite dev 冷启动转译大量模块，初始 page.goto 偶发超 30s；放宽到 90s。
+        defaultNavigationTimeout: 90000
+
+steps:
+  # —— 1. 大厅渲染 ——
+  - target: web
+    action:
+      type: waitFor
+      selector: ".game-card"
+      state: visible
+      timeoutMs: 15000
+  - target: web
+    action:
+      type: evaluate
+      name: 大厅卡片数 ≥ 500
+      script: "document.querySelectorAll('.game-card').length >= 500"
+      expectTruthy: true
+  - target: web
+    action:
+      type: evaluate
+      name: 大厅副标题含游戏总数
+      script: "/\\d+ 个小游戏/.test(document.querySelector('.lobby__subtitle')?.textContent || '')"
+      expectTruthy: true
+  - target: web
+    action:
+      type: screenshot
+      name: "lobby-loaded"
+
+  # —— 2. 批量验证代表游戏可加载 ——
+  # 逐个 goto 游戏 hash → 等 stage → 断言 stage 有内容且不在大厅。
+  # 覆盖：新增 8 个 + 重构 6 个 + 数学/认知/语言/社交代表 6 个 = 20 个。
+  - target: web
+    action:
+      type: evaluate
+      name: 批量加载 20 个代表游戏（新增+重构+各品类）
+      script: |
+        (async () => {
+          const ids = [
+            "classical-poem","big-small","color-find","shape-find","count-finger",
+            "throw-ball","kick-ball","follow-action",
+            "brush-teeth","wash-hands","rock-cycle","water-cycle","dress-order","tie-bow",
+            "color-mixer","number-monster","balloon-math","greeting","memory-flip","idiom"
+          ];
+          let ok = 0;
+          const failed = [];
+          for (const id of ids) {
+            window.location.hash = "#/" + id;
+            await new Promise(r => setTimeout(r, 500));
+            const stage = document.querySelector(".game__stage");
+            const hasContent = stage && stage.children.length > 0;
+            const inLobby = (document.body.innerText || "").includes("个小游戏 · 边玩边学");
+            if (!inLobby && hasContent) { ok++; } else { failed.push(id); }
+          }
+          window.__e2e_failed = failed;
+          return failed.length === 0;
+        })()
+      expectTruthy: true

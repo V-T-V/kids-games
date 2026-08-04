@@ -34,7 +34,7 @@ export class WheelGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -53,6 +53,7 @@ export class WheelGame extends BaseGame {
   private startRound(): void {
     this.root.innerHTML = "";
     this.spinning = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const n = this.sectorCount();
     // 取 n 种颜色；难度高时每种只出现一次（区分度更好）
     this.sectors = shuffle(COLOR_POOL).slice(0, n);

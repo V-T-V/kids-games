@@ -17,7 +17,7 @@ export class PipeConnectGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -26,15 +26,12 @@ export class PipeConnectGame extends BaseGame {
   }
 
   private len(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const n = this.len();
     // 正确状态都是 0（横向直管）。初始随机旋转。
     this.rotations = Array.from({ length: n }, () => randInt(0, 3) * 90);

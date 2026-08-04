@@ -71,7 +71,7 @@ export class EcosystemGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -81,15 +81,12 @@ export class EcosystemGame extends BaseGame {
 
   /** 本轮链长上限 */
   private maxLen(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.next = 0;
 
     // 选一条链，截取到 maxLen

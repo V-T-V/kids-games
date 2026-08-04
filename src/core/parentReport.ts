@@ -1,5 +1,5 @@
 /**
- * 家长报告：把 81 个游戏的进度转成可运营、可解释的能力概览。
+ * 家长报告：把 575 个游戏的进度转成可运营、可解释的能力概览。
  */
 import { GAMES, findGame } from "../games/registry.ts";
 import type { GameId, SaveData } from "../types.ts";
@@ -121,6 +121,51 @@ export function formatParentSummary(report: ParentReport): string {
 
 function skillOf(tag: string): string {
   return tag.split("·")[0]?.trim() || "综合";
+}
+
+// ============ 理论模型领域报告（6 领域，与学习中心一致）============
+
+import { DOMAINS, getSkillProfile, type Domain } from "../learn/model.ts";
+
+export interface DomainSkillReport {
+  domain: Domain;
+  title: string;
+  icon: string;
+  games: number;
+  played: number;
+  cleared: number;
+  avgStars: number;
+}
+
+/** 构建 6 领域能力报告（基于加德纳多元智能理论模型）。 */
+export function buildDomainReport(save: SaveData): DomainSkillReport[] {
+  const result: DomainSkillReport[] = [];
+  for (const d of DOMAINS) {
+    let games = 0;
+    let played = 0;
+    let cleared = 0;
+    let starSum = 0;
+    for (const game of GAMES) {
+      if (getSkillProfile(game.id).domain !== d.id) continue;
+      games++;
+      const p = save.progress[game.id];
+      if (p.playCount > 0) {
+        played++;
+        starSum += p.bestStars;
+      }
+      if (p.cleared) cleared++;
+    }
+    result.push({
+      domain: d.id,
+      title: d.title,
+      icon: d.icon,
+      games,
+      played,
+      cleared,
+      avgStars: played > 0 ? round1(starSum / played) : 0,
+    });
+  }
+  return result;
 }
 
 function starsForSkill(save: SaveData, skill: string): number {

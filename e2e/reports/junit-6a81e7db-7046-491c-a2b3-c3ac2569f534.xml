@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kids-games-02-all-games-mount" tests="11" failures="5" time="425.35">
+    <testcase classname="kids-games-02-all-games-mount" name="web:waitFor" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#6 evaluate @web超时 (60000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#7 evaluate @web超时 (60000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="步骤异常: 步骤 #8 action 包含未解析变量：$.script"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:screenshot" time="0"
+      <failure message="step#9 screenshot @web超时 (60000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:driver.shutdown" time="0"
+      <failure message="driver shutdown 失败：driver web shutdown超时 (6504ms)"/>/>
+</testsuite>

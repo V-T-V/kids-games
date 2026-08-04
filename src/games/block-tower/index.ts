@@ -16,6 +16,8 @@ export class BlockTowerGame extends BaseGame {
   constructor() {
     super("block-tower");
   }
+  private roundTotal = 0;
+  private roundsDone = 0;
   private blocks: Block[] = [];
   private movingX = 0;
   private dir = 1;
@@ -27,6 +29,8 @@ export class BlockTowerGame extends BaseGame {
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.startRound();
   }
   protected unmount(): void {
@@ -34,11 +38,12 @@ export class BlockTowerGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     this.blocks = [];
     this.baseW = 140;
     this.speed =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.movingX = 0;
     this.dir = 1;
     this.over = false;
@@ -136,7 +141,13 @@ export class BlockTowerGame extends BaseGame {
       const topW = this.blocks[this.blocks.length - 1]!.w;
       const ratio = topW / this.baseW; // 1.0=完美对齐，越小越偏
       const stars = ratio > 0.6 ? 3 : ratio > 0.35 ? 2 : 1;
-      this.finishClear(stars);
+      this.roundsDone += 1;
+      if (this.roundsDone >= this.roundTotal) this.finishClear(stars);
+      else
+        this.trackTimeout(() => {
+          this.over = false;
+          this.spawnMoving();
+        }, 800);
     } else {
       this.spawnMoving();
     }

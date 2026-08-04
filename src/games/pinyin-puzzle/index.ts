@@ -63,7 +63,7 @@ export class PinyinPuzzleGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -73,10 +73,11 @@ export class PinyinPuzzleGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const word = sample(WORDS);
     // 干扰数随难度
     const distractN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const distract = shuffle(
       DISTRACTORS.filter((d) => d !== word.initial && d !== word.final),
     ).slice(0, distractN);

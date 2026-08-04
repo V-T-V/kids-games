@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-02T15:47:28.020Z",
+  "cohort": {
+    "project": "kids-games",
+    "environment": "kids-games-local",
+    "suite": "smoke",
+    "commitSha": "unknown",
+    "branch": "unknown",
+    "buildVersion": "unknown"
+  },
+  "excludedIncompatibleRuns": 1,
+  "snapshot": {
+    "totalRuns": 13,
+    "passed": 0,
+    "failed": 11,
+    "aborted": 0,
+    "timedOut": 2,
+    "flaky": 0,
+    "active": 0,
+    "passRate": 0,
+    "casesCovered": 0,
+    "operations": {
+      "driver.shutdown": 11,
+      "waitFor": 9,
+      "evaluate": 57,
+      "screenshot": 9,
+      "sleep": 18
+    },
+    "dataWrites": 0,
+    "iframeEvents": 0,
+    "failureRuns": 13,
+    "failureEvidenceRuns": 13,
+    "failureEvidenceGaps": 0,
+    "evidencePolicyRuns": 5,
+    "evidencePolicyGaps": 0,
+    "evidenceRuns": 13
+  },
+  "flakyCaseNames": [],
+  "failureEvidenceGaps": [],
+  "evidencePolicyGaps": [],
+  "pagesCovered": [],
+  "openBugs": 32
+}

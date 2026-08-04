@@ -12,8 +12,15 @@ import { getCssVar } from "../../lobby/util.ts";
 /** 台阶从低到高对应的音符（C 大调八度）。 */
 const SCALE = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"] as const;
 
-/** 可弹的儿歌旋律（小星星前半段）。 */
-const SONG: string[] = ["C4", "C4", "G4", "G4", "A4", "A4", "G5", "F5"];
+/** 可弹的儿歌旋律（小星星前半段，全部落在 C4-C5 台阶范围内，确保玩家能点出）。 */
+const SONG: string[] = ["C4", "C4", "G4", "G4", "A4", "A4", "G4", "F4"];
+
+/** 多首可弹的儿歌旋律库（全部落在 C4-C5 台阶范围内，确保玩家能点出）。 */
+const SONGS: { notes: string[]; name: string }[] = [
+  { notes: SONG, name: "小星星" },
+  { notes: ["C4", "D4", "E4", "F4", "E4", "D4", "C4"], name: "小蜜蜂" },
+  { notes: ["E4", "D4", "C4", "D4", "E4", "E4", "E4"], name: "玛丽羊" },
+];
 
 interface Stair {
   note: string;
@@ -25,11 +32,17 @@ export class MusicStairsGame extends BaseGame {
     super("music-stairs");
   }
 
+  private roundsDone = 0;
+  private roundTotal = 0;
+  private songIdx = 0;
   private stairs: Stair[] = [];
   private melodyProgress = 0;
   private inFollowMode = false;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 2 : 3;
+    this.songIdx = 0;
     this.injectStyle();
     this.render();
   }
@@ -38,14 +51,23 @@ export class MusicStairsGame extends BaseGame {
     /* DOM 由 root.innerHTML 清空 */
   }
 
+  private currentSong(): string[] {
+    return SONGS[this.songIdx % SONGS.length]!.notes;
+  }
+
+  private currentSongName(): string {
+    return SONGS[this.songIdx % SONGS.length]!.name;
+  }
+
   private render(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const wrap = document.createElement("div");
     wrap.className = "ms-wrap";
 
     const task = document.createElement("div");
     task.className = "ms-task";
-    task.textContent = "点台阶听声音，或点「跟我唱」学一首歌～";
+    task.textContent = `点台阶听声音，或点「跟我唱」学一首歌～（第 ${this.roundsDone + 1}/${this.roundTotal} 关 · ${this.currentSongName()}）`;
     wrap.appendChild(task);
 
     const stairsBox = document.createElement("div");
@@ -80,11 +102,11 @@ export class MusicStairsGame extends BaseGame {
     );
     actions.appendChild(
       createButton({
-        text: "弹小星星",
+        text: `弹${this.currentSongName()}`,
         icon: "⭐",
         variant: "secondary",
         onClick: () => {
-          playMelody(SONG, 0.32);
+          playMelody(this.currentSong(), 0.32);
           this.checkAchievement(true);
         },
       }),
@@ -105,18 +127,27 @@ export class MusicStairsGame extends BaseGame {
 
     // 跟唱模式：检测是否按旋律顺序点
     if (this.inFollowMode) {
-      const expected = SONG[this.melodyProgress];
+      const song = this.currentSong();
+      const expected = song[this.melodyProgress];
       if (note === expected) {
         const r = btn.getBoundingClientRect();
         burst(r.left + r.width / 2, r.top, 8);
         this.melodyProgress += 1;
-        if (this.melodyProgress >= SONG.length) {
+        if (this.melodyProgress >= song.length) {
           // 完整弹奏
           this.inFollowMode = false;
           this.melodyProgress = 0;
           this.unlock("musician");
           this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
-          this.trackTimeout(() => this.finishClear(3), 1200);
+          this.trackTimeout(() => {
+            this.roundsDone += 1;
+            if (this.roundsDone >= this.roundTotal) {
+              this.finishClear(3);
+            } else {
+              this.songIdx += 1;
+              this.render();
+            }
+          }, 1200);
         }
       } else {
         // 弹错，重置进度但不惩罚（音乐游戏重在探索）
@@ -139,8 +170,9 @@ export class MusicStairsGame extends BaseGame {
   private followAlong(): void {
     this.inFollowMode = true;
     this.melodyProgress = 0;
+    const song = this.currentSong();
     // 先示范一遍
-    SONG.forEach((n, i) => {
+    song.forEach((n, i) => {
       this.trackTimeout(() => {
         playNote(n, 0.3);
         const s = this.stairs.find((x) => x.note === n);
@@ -158,12 +190,12 @@ export class MusicStairsGame extends BaseGame {
         const ov = new Overlay({
           title: "轮到你啦！",
           emoji: "🎶",
-          body: "照着刚才的顺序，点出台阶弹出小星星～",
+          body: `照着刚才的顺序，点出台阶弹出${this.currentSongName()}～`,
           primary: { text: "开始", icon: "🎹", onClick: () => ov.destroy() },
         });
         ov.show();
       },
-      SONG.length * 380 + 200,
+      song.length * 380 + 200,
     );
   }
 

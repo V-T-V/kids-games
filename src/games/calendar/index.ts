@@ -36,7 +36,7 @@ export class CalendarGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -47,6 +47,7 @@ export class CalendarGame extends BaseGame {
   private startRound(): void {
     this.locked = false;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.firstWeekday = randInt(0, 6);
     this.daysInMonth = randInt(28, 31);
     this.currentQ = this.makeQuestion();

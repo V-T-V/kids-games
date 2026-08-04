@@ -20,6 +20,18 @@ const PAIRS: Pair[] = [
   { base: "日", twin: "目" },
   { base: "田", twin: "由" },
   { base: "木", twin: "本" },
+  { base: "土", twin: "士" },
+  { base: "未", twin: "末" },
+  { base: "牛", twin: "午" },
+  { base: "刀", twin: "力" },
+  { base: "己", twin: "已" },
+  { base: "人", twin: "八" },
+  { base: "贝", twin: "见" },
+  { base: "白", twin: "日" },
+  { base: "月", twin: "用" },
+  { base: "开", twin: "井" },
+  { base: "儿", twin: "几" },
+  { base: "甲", twin: "由" },
 ];
 
 // 干扰字（与题面字不像）
@@ -45,7 +57,7 @@ export class SimilarCharGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -55,11 +67,12 @@ export class SimilarCharGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const pair = sample(PAIRS);
     const target = pair.base;
     const answer = pair.twin;
     const distractN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     // 干扰字不能与题面/答案重复，也不能与题面字太像（仅用池中其他字）
     const distract = shuffle(
       DISTRACTORS.filter((d) => d !== target && d !== answer),

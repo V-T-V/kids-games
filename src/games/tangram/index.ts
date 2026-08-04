@@ -31,11 +31,15 @@ export class TangramGame extends BaseGame {
   constructor() {
     super("tangram");
   }
+  private roundTotal = 0;
+  private roundsDone = 0;
   private unbinds: (() => void)[] = [];
   private remaining = 0;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.startRound();
   }
   protected unmount(): void {
@@ -44,6 +48,7 @@ export class TangramGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     this.unbinds = [];
     const n =
@@ -134,10 +139,12 @@ export class TangramGame extends BaseGame {
         this.resetWrongStreak();
         this.remaining -= 1;
         if (this.remaining <= 0)
-          this.trackTimeout(
-            () => this.finishClear(starsByAccuracy(this.wrongCount)),
-            900,
-          );
+          this.trackTimeout(() => {
+            this.roundsDone += 1;
+            if (this.roundsDone >= this.roundTotal)
+              this.finishClear(starsByAccuracy(this.wrongCount));
+            else this.startRound();
+          }, 900);
       } else {
         pc.el.style.position = "";
         pc.el.style.left = "";

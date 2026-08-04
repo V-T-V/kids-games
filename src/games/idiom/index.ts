@@ -22,6 +22,28 @@ const IDIOMS: Idiom[] = [
   { chars: ["五", "光", "十", "色"], gap: 1 },
   { chars: ["四", "面", "八", "方"], gap: 2 },
   { chars: ["一", "帆", "风", "顺"], gap: 3 },
+  { chars: ["一", "诺", "千", "金"], gap: 2 },
+  { chars: ["画", "蛇", "添", "足"], gap: 1 },
+  { chars: ["守", "株", "待", "兔"], gap: 3 },
+  { chars: ["井", "底", "之", "蛙"], gap: 2 },
+  { chars: ["狐", "假", "虎", "威"], gap: 1 },
+  { chars: ["对", "牛", "弹", "琴"], gap: 3 },
+  { chars: ["拔", "苗", "助", "长"], gap: 2 },
+  { chars: ["自", "相", "矛", "盾"], gap: 1 },
+  { chars: ["掩", "耳", "盗", "铃"], gap: 3 },
+  { chars: ["亡", "羊", "补", "牢"], gap: 2 },
+  { chars: ["刻", "舟", "求", "剑"], gap: 1 },
+  { chars: ["杯", "水", "车", "薪"], gap: 3 },
+  { chars: ["朝", "三", "暮", "四"], gap: 2 },
+  { chars: ["大", "海", "捞", "针"], gap: 1 },
+  { chars: ["春", "暖", "花", "开"], gap: 3 },
+  { chars: ["鸦", "雀", "无", "声"], gap: 2 },
+  { chars: ["马", "到", "成", "功"], gap: 1 },
+  { chars: ["鸡", "飞", "狗", "跳"], gap: 3 },
+  { chars: ["虎", "头", "蛇", "尾"], gap: 2 },
+  { chars: ["风", "和", "日", "丽"], gap: 1 },
+  { chars: ["鸟", "语", "花", "香"], gap: 3 },
+  { chars: ["金", "枝", "玉", "叶"], gap: 2 },
 ];
 
 // 干扰字库
@@ -53,7 +75,7 @@ export class IdiomGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -63,10 +85,11 @@ export class IdiomGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const idiom = sample(IDIOMS);
     const answer = idiom.chars[idiom.gap]!;
     const distractN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     // 干扰字不能与答案重复，也不与成语中其它字重复
     const used = new Set([...idiom.chars]);
     const distract = shuffle(DistrACTORS.filter((d) => !used.has(d))).slice(

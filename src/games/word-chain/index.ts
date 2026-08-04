@@ -31,6 +31,41 @@ const CHAINS: Card[][] = [
     { word: "水果", head: "水", tail: "果" },
     { word: "果树", head: "果", tail: "树" },
   ],
+  [
+    { word: "开花", head: "开", tail: "花" },
+    { word: "花香", head: "花", tail: "香" },
+    { word: "香蕉", head: "香", tail: "蕉" },
+  ],
+  [
+    { word: "白云", head: "白", tail: "云" },
+    { word: "云朵", head: "云", tail: "朵" },
+    { word: "朵朵", head: "朵", tail: "朵" },
+  ],
+  [
+    { word: "明天", head: "明", tail: "天" },
+    { word: "天上", head: "天", tail: "上" },
+    { word: "上学", head: "上", tail: "学" },
+  ],
+  [
+    { word: "开门", head: "开", tail: "门" },
+    { word: "门口", head: "门", tail: "口" },
+    { word: "口水", head: "口", tail: "水" },
+  ],
+  [
+    { word: "火车", head: "火", tail: "车" },
+    { word: "车站", head: "车", tail: "站" },
+    { word: "站立", head: "站", tail: "立" },
+  ],
+  [
+    { word: "书桌", head: "书", tail: "桌" },
+    { word: "桌面", head: "桌", tail: "面" },
+    { word: "面条", head: "面", tail: "条" },
+  ],
+  [
+    { word: "电灯", head: "电", tail: "灯" },
+    { word: "灯光", head: "灯", tail: "光" },
+    { word: "光明", head: "光", tail: "明" },
+  ],
 ];
 
 export class WordChainGame extends BaseGame {
@@ -44,7 +79,7 @@ export class WordChainGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -55,6 +90,7 @@ export class WordChainGame extends BaseGame {
   private startRound(): void {
     this.root.innerHTML = "";
     this.chain = shuffle(CHAINS)[0]!;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.placed = [];
     const cards = shuffle(this.chain);
 

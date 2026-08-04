@@ -1,0 +1,321 @@
+{
+  "runId": "9432e78b-5e15-4e30-bc5d-782c3cb143a2",
+  "caseName": "kids-games-02-all-games-mount",
+  "project": "kids-games",
+  "mode": "data-flow",
+  "env": "kids-games-local",
+  "status": "timed-out",
+  "startedAt": 1785684140173,
+  "endedAt": 1785685647677,
+  "durationMs": 1507504,
+  "steps": [
+    {
+      "index": 0,
+      "stepGroup": 0,
+      "target": "web",
+      "actionType": "waitFor",
+      "status": "passed",
+      "durationMs": 2990,
+      "data": {}
+    },
+    {
+      "index": 1,
+      "stepGroup": 1,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 160,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 2,
+      "stepGroup": 2,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "passed",
+      "durationMs": 19035,
+      "data": {
+        "value": true
+      }
+    },
+    {
+      "index": 3,
+      "stepGroup": 3,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 503,
+      "data": {}
+    },
+    {
+      "index": 4,
+      "stepGroup": 4,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#4 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 5,
+      "stepGroup": 5,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 514,
+      "data": {}
+    },
+    {
+      "index": 6,
+      "stepGroup": 6,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#6 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 7,
+      "stepGroup": 7,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 515,
+      "data": {}
+    },
+    {
+      "index": 8,
+      "stepGroup": 8,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#8 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 9,
+      "stepGroup": 9,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 514,
+      "data": {}
+    },
+    {
+      "index": 10,
+      "stepGroup": 10,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#10 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 11,
+      "stepGroup": 11,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 515,
+      "data": {}
+    },
+    {
+      "index": 12,
+      "stepGroup": 12,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#12 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 13,
+      "stepGroup": 13,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 515,
+      "data": {}
+    },
+    {
+      "index": 14,
+      "stepGroup": 14,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#14 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 15,
+      "stepGroup": 15,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 513,
+      "data": {}
+    },
+    {
+      "index": 16,
+      "stepGroup": 16,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#16 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 17,
+      "stepGroup": 17,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 513,
+      "data": {}
+    },
+    {
+      "index": 18,
+      "stepGroup": 18,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#18 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 19,
+      "stepGroup": 19,
+      "target": "web",
+      "actionType": "sleep",
+      "status": "passed",
+      "durationMs": 514,
+      "data": {}
+    },
+    {
+      "index": 20,
+      "stepGroup": 20,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#20 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 21,
+      "stepGroup": 21,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#21 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 22,
+      "stepGroup": 22,
+      "target": "web",
+      "actionType": "evaluate",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "step#22 evaluate @web超时 (120000ms)"
+    },
+    {
+      "index": 23,
+      "stepGroup": 23,
+      "target": "web",
+      "actionType": "screenshot",
+      "status": "failed",
+      "durationMs": 0,
+      "error": "运行超时 (1500000ms)"
+    },
+    {
+      "index": 24,
+      "stepGroup": 100024,
+      "target": "web",
+      "actionType": "driver.shutdown",
+      "status": "failed",
+      "durationMs": 0,
+      "data": {
+        "phase": "driver.shutdown"
+      },
+      "error": "driver shutdown 失败：driver web shutdown超时 (6100ms)"
+    }
+  ],
+  "assertions": [],
+  "artifacts": [
+    {
+      "kind": "log",
+      "target": "frontend",
+      "path": "process://stdout",
+      "content": "\n  \u001b[32m\u001b[1mVITE\u001b[22m v5.4.21\u001b[39m  \u001b[2mready in \u001b[0m\u001b[1m3542\u001b[22m\u001b[2m\u001b[0m ms\u001b[22m\n\n  \u001b[32m➜\u001b[39m  \u001b[1mLocal\u001b[22m:   \u001b[36mhttp://127.0.0.1:\u001b[1m7835\u001b[22m/\u001b[39m\n",
+      "id": "80c5df67-343e-48e7-b7fc-aa302f2b5dd3",
+      "createdAt": 1785685640175
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://0",
+      "content": "[vite] connecting...",
+      "id": "b25741b2-ad2a-4bc0-9016-28f8f80a3853",
+      "createdAt": 1785685640176
+    },
+    {
+      "kind": "log",
+      "target": "web",
+      "path": "console://1",
+      "content": "[vite] connected.",
+      "id": "b4eb3737-7714-4836-ba5a-aff40ea97345",
+      "createdAt": 1785685640176
+    },
+    {
+      "id": "report-4",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-9432e78b-5e15-4e30-bc5d-782c3cb143a2.html",
+      "label": "单次 HTML 报告",
+      "contentType": "text/html",
+      "createdAt": 1785685647784
+    },
+    {
+      "id": "report-5",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\report-9432e78b-5e15-4e30-bc5d-782c3cb143a2.json",
+      "label": "单次 JSON 报告",
+      "contentType": "application/json",
+      "createdAt": 1785685647788
+    },
+    {
+      "id": "report-6",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\junit-9432e78b-5e15-4e30-bc5d-782c3cb143a2.xml",
+      "label": "JUnit 报告",
+      "contentType": "application/xml",
+      "createdAt": 1785685647789
+    },
+    {
+      "id": "report-7",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.html",
+      "label": "自动缺陷报告",
+      "contentType": "text/html",
+      "createdAt": 1785685647792
+    },
+    {
+      "id": "report-8",
+      "kind": "file",
+      "path": "D:\\M_X_M\\kids-games\\e2e\\reports\\bugs.json",
+      "label": "自动缺陷台账",
+      "contentType": "application/json",
+      "createdAt": 1785685647794
+    }
+  ],
+  "comparisons": [],
+  "error": "运行超时 (1500000ms)",
+  "provenance": {
+    "schemaVersion": 1,
+    "runnerVersion": "0.1.0",
+    "source": "cli",
+    "caseDigest": "404511e184b45757b04b8a2c69e5689850c9330617cd29204caf37283c4b058a",
+    "projectSuite": "smoke"
+  }
+}

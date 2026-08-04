@@ -46,6 +46,51 @@ const DATA: RadicalEntry[] = [
     words: ["打", "拍", "拉", "拿"],
     distract: ["水", "木", "山", "日", "口", "月"],
   },
+  {
+    radical: "火",
+    words: ["烧", "炒", "灯", "烟"],
+    distract: ["水", "木", "山", "日", "口", "人"],
+  },
+  {
+    radical: "土",
+    words: ["地", "城", "场", "坐"],
+    distract: ["水", "木", "山", "日", "口", "月"],
+  },
+  {
+    radical: "女",
+    words: ["妈", "姐", "妹", "奶"],
+    distract: ["水", "木", "山", "日", "口", "人"],
+  },
+  {
+    radical: "虫",
+    words: ["蚂", "蝴", "蜜", "蜘"],
+    distract: ["水", "木", "山", "日", "口", "月"],
+  },
+  {
+    radical: "食",
+    words: ["饭", "饱", "饺", "饼"],
+    distract: ["水", "木", "山", "日", "口", "人"],
+  },
+  {
+    radical: "宀",
+    words: ["家", "宝", "安", "宇"],
+    distract: ["水", "木", "山", "日", "口", "月"],
+  },
+  {
+    radical: "草",
+    words: ["花", "草", "蓝", "苗"],
+    distract: ["水", "木", "山", "日", "口", "人"],
+  },
+  {
+    radical: "足",
+    words: ["跑", "跳", "路", "踢"],
+    distract: ["水", "木", "山", "日", "口", "月"],
+  },
+  {
+    radical: "目",
+    words: ["眼", "睛", "看", "睡"],
+    distract: ["水", "木", "山", "日", "口", "人"],
+  },
 ];
 
 export class RadicalGame extends BaseGame {
@@ -57,7 +102,7 @@ export class RadicalGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -67,12 +112,13 @@ export class RadicalGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const entry = sample(DATA);
     // 正确数与干扰数随难度；至少 2 正确
     const okN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 3;
+      this.difficulty === "easy" ? 4: this.difficulty === "medium" ? 5 : 6;
     const badN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const correct = shuffle(entry.words).slice(0, okN);
     const distract = shuffle(entry.distract).slice(0, badN);
     const options = shuffle([...correct, ...distract]);

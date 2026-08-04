@@ -68,19 +68,11 @@ export class SeekFindGame extends BaseGame {
   }
 
   private roundsPerClear(): number {
-    return this.difficulty === "easy"
-      ? 2
-      : this.difficulty === "medium"
-        ? 3
-        : 4;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private targetsPerRound(): number {
-    return this.difficulty === "easy"
-      ? 3
-      : this.difficulty === "medium"
-        ? 4
-        : 5;
+    return this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
   }
 
   private decoyCount(): number {
@@ -93,6 +85,7 @@ export class SeekFindGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const targetN = this.targetsPerRound();
     this.targetList = shuffle([...TARGETS]).slice(0, targetN);
     this.foundCount = 0;

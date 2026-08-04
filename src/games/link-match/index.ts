@@ -33,6 +33,8 @@ export class LinkMatchGame extends BaseGame {
   constructor() {
     super("link-match");
   }
+  private roundsDone = 0;
+  private roundTotal = 0;
   private cols = 0;
   private rows = 0;
   private grid: Cell[][] = [];
@@ -43,6 +45,8 @@ export class LinkMatchGame extends BaseGame {
   private svgEl!: SVGSVGElement;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -52,6 +56,7 @@ export class LinkMatchGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const pairs =
       this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.cols = pairs;
@@ -74,7 +79,7 @@ export class LinkMatchGame extends BaseGame {
     wrap.className = "lm-wrap";
     const task = document.createElement("div");
     task.className = "lm-task";
-    task.textContent = "点两个一样的图案把它们连起来～";
+    task.innerHTML = `点两个一样的图案把它们连起来～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     const board = document.createElement("div");
@@ -143,10 +148,14 @@ export class LinkMatchGame extends BaseGame {
         t.el.style.visibility = "hidden";
       }, 250);
       if (this.remaining <= 0) {
-        this.trackTimeout(
-          () => this.finishClear(starsByAccuracy(this.wrongCount)),
-          800,
-        );
+        this.trackTimeout(() => {
+          this.roundsDone += 1;
+          if (this.roundsDone >= this.roundTotal) {
+            this.finishClear(starsByAccuracy(this.wrongCount));
+          } else {
+            this.startRound();
+          }
+        }, 800);
       }
     } else {
       const paused = this.onWrong();

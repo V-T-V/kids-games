@@ -15,6 +15,7 @@ interface Fish {
   x: number;
   y: number;
   vx: number;
+  vy: number;
   el: HTMLElement;
 }
 
@@ -36,9 +37,14 @@ export class FishingGame extends BaseGame {
   private need = 0;
   private raf = 0;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startRound();
   }
   protected unmount(): void {
@@ -47,12 +53,13 @@ export class FishingGame extends BaseGame {
 
   private startRound(): void {
     this.over = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     const types = shuffle(FISH_TYPES);
     this.target = types[0]!.color;
     this.score = 0;
     this.need =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.fishes = [];
 
     const wrap = document.createElement("div");
@@ -83,14 +90,16 @@ export class FishingGame extends BaseGame {
     const r = this.pool.getBoundingClientRect();
     const w = r.width || 360;
     const h = r.height || 240;
-    const x = randInt(0, w - 40);
-    const y = randInt(20, h - 40);
+    const x = randInt(10, w - 50);
+    const y = randInt(20, h - 50);
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     const vx =
       (Math.random() < 0.5 ? -1 : 1) * (this.difficulty === "easy" ? 1 : 1.6);
+    // 垂直缓慢游动，让鱼自然分散、不互相遮挡
+    const vy = (Math.random() - 0.5) * 0.6;
     this.pool.appendChild(el);
-    const f: Fish = { color, emoji, x, y, vx, el };
+    const f: Fish = { color, emoji, x, y, vx, vy, el };
     el.addEventListener("click", () => this.catchFish(f));
     this.fishes.push(f);
   }
@@ -98,6 +107,7 @@ export class FishingGame extends BaseGame {
   private loop = (): void => {
     const r = this.pool.getBoundingClientRect();
     const w = r.width;
+    const h = r.height;
     for (const f of this.fishes) {
       f.x += f.vx;
       if (f.x < 0) {
@@ -110,7 +120,11 @@ export class FishingGame extends BaseGame {
         f.vx *= -1;
         f.el.style.transform = "scaleX(1)";
       }
+      // 垂直游动 + 边界反弹（确保鱼始终在可见范围内）
+      f.y += f.vy;
+      if (f.y < 15 || f.y > h - 45) f.vy *= -1;
       f.el.style.left = `${f.x}px`;
+      f.el.style.top = `${f.y}px`;
     }
     this.raf = requestAnimationFrame(this.loop);
   };
@@ -131,7 +145,16 @@ export class FishingGame extends BaseGame {
       if (this.score >= this.need) {
         this.over = true;
         this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
-        this.trackTimeout(() => this.finishClear(this.calcStars()), 700);
+        this.resetWrongStreak();
+        this.roundsDone += 1;
+        this.reportProgress(this.roundsDone, this.roundTotal);
+        this.trackTimeout(() => {
+          if (this.roundsDone >= this.roundTotal) {
+            this.finishClear(this.calcStars());
+          } else {
+            this.startRound();
+          }
+        }, 700);
       }
     } else {
       f.el.classList.add("fi-fish--escape");

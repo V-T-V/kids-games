@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kids-games-02-all-games-mount" tests="2" failures="2" time="44.65">
+    <testcase classname="kids-games-02-all-games-mount" name="startup:driver.shutdown" time="0"
+      <failure message="启动失败后的 driver 清理失败：startup driver shutdown超时 (7500ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="frontend:driver.shutdown" time="0"
+      <failure message="driver shutdown 失败：driver shutdown 总预算已耗尽"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="run-level-error" time="0"><failure message="page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to &quot;http://127.0.0.1:6780/&quot;, waiting until &quot;load&quot;[22m
+"/></testcase>
+</testsuite>

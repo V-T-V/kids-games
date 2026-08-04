@@ -292,6 +292,42 @@ button {
 .parent-btn:hover {
   opacity: 1;
 }
+/* 反馈角标：未处理反馈数 > 0 时在齿轮右上角显示红色数字 */
+.parent-btn[data-feedback-count="0"]::after {
+  display: none;
+}
+.parent-btn::after {
+  content: attr(data-feedback-count);
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #ff4757;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(255, 71, 87, 0.5);
+  animation: badge-pop 0.3s ease;
+}
+.parent-btn {
+  position: fixed; /* 保留 position 给 ::after 定位 */
+}
+@keyframes badge-pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
 
 /* ==========================================================================
    吉祥物"点点"
@@ -466,13 +502,55 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   padding: 12px 4px;
   flex-shrink: 0;
 }
 .game__title {
   font-size: 1.3rem;
   font-weight: 800;
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game__speak {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease;
+}
+.game__speak:active {
+  transform: scale(0.9);
+}
+.game__feedback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+}
+.game__feedback:active {
+  transform: scale(0.9);
+}
+.game__feedback:hover {
+  opacity: 1;
 }
 .game__stage {
   flex: 1;
@@ -565,4 +643,229 @@ button {
   color: var(--ink-soft);
   min-width: 36px;
   text-align: right;
+}
+
+/* ==========================================================================
+   全局精致度提升：入场动画 / 卡片悬浮 / 结算星星依次点亮
+   ========================================================================== */
+
+/* 大厅卡片错位渐入动画 */
+.game-card {
+  animation: card-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  /* 虚拟滚动优化：卡片数多时浏览器只渲染可见区域，大幅减少首屏渲染量 */
+  content-visibility: auto;
+  contain-intrinsic-size: 160px 180px;
+}
+/* 卡片数超过100时禁用入场动画（由 JS 加 .lobby__grid--many 控制） */
+.lobby__grid--many .game-card {
+  animation: none;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 卡片悬浮（仅桌面 hover 设备） */
+@media (hover: hover) {
+  .game-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(58, 46, 74, 0.25);
+  }
+}
+
+/* 按钮按压涟漪 */
+.btn::after,
+.game__back::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  pointer-events: none;
+}
+.btn:active::after,
+.game__back:active::after {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0s,
+    transform 0s;
+}
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 结算页星星依次点亮 */
+.overlay__emoji + .overlay__title ~ .overlay__body [style*="⭐"],
+.star-pop {
+  animation: star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes star-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  60% {
+    transform: scale(1.3) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* 大厅分类 tab 切换淡入 */
+.lobby__grid {
+  animation: grid-fade 0.25s ease;
+}
+@keyframes grid-fade {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   全局移动端兼容性兜底（覆盖所有游戏）
+   解决：99个游戏无@media / 拖拽touch-action / 安全区 / 超小屏溢出
+   ========================================================================== */
+
+/* 所有游戏内的拖拽元素默认阻止滚动（配合 bindPointer） */
+.game__stage [class*="--drag"],
+.game__stage [class*="-draggable"],
+.game__stage canvas {
+  touch-action: none;
+}
+
+/* 超小屏（≤360px）：缩放游戏内容防溢出 */
+@media (max-width: 360px) {
+  /* 注：曾用 transform: scale(0.92) 缩小整页，但这会让触控目标更小、
+     对 3-6 岁粗手指更难点中。改为只缩字号，保留点击区域。 */
+  .game__title {
+    font-size: 1rem;
+  }
+  .game__task,
+  [class*="__task"] {
+    font-size: 0.95rem !important;
+  }
+}
+
+/* 安全区适配（刘海屏/底部圆角） */
+.game {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 大厅网格在小屏上减少列数 */
+@media (max-width: 360px) {
+  .lobby__grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+}
+
+/* 防止 iOS 输入框聚焦时页面放大 */
+.lobby__search input {
+  font-size: 16px;
+}
+
+/* 游戏内按钮在触屏上确保足够大的触控区 */
+@media (pointer: coarse) {
+  .game__stage button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* 游戏切换过渡（root 内容渐入） */
+.game__stage {
+  animation: stage-in 0.3s ease;
+}
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 游戏内按钮在触屏上确保足够大的触控区。
+   扩展：除 button 外，带 role="button" 的可点 div、以及常见的可点击类
+   （含 -opt/-tile/-cell/-card/-piece/-food/-drop 后缀）也保证 ≥40px 触控区，
+   覆盖那些用 div 而非 button 实现的游戏。 */
+@media (pointer: coarse) {
+  .game__stage button,
+  .game__stage [role="button"],
+  .game__stage [class*="-opt"],
+  .game__stage [class*="-tile"],
+  .game__stage [class*="-cell"],
+  .game__stage [class*="-card"]:not(.lobby__card),
+  .game__stage [class*="-piece"],
+  .game__stage [class*="-food"],
+  .game__stage [class*="-drop"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* 横屏引导：竖屏优先的游戏在手机横置时提示孩子转回竖屏。
+   仅在窄屏（手机）+ 横屏（高<宽且高<500px）时显示，平板/桌面不受影响。 */
+.rotate-hint {
+  display: none;
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: linear-gradient(160deg, #ffd166, #ff8c42);
+    color: #3a2e4a;
+    text-align: center;
+    padding: 24px;
+  }
+  .rotate-hint__icon {
+    font-size: 4rem;
+    animation: rotate-hint-wiggle 2s ease-in-out infinite;
+  }
+  .rotate-hint__text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.6;
+  }
+}
+@keyframes rotate-hint-wiggle {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+  70%,
+  90% {
+    transform: rotate(-90deg);
+  }
+  80% {
+    transform: rotate(0deg);
+  }
 }

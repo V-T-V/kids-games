@@ -18,9 +18,14 @@ export class WhackMoleGame extends BaseGame {
   private timeLabel!: HTMLDivElement;
   private scoreLabel!: HTMLDivElement;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   protected mount(): void {
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.startGame();
   }
   protected unmount(): void {
@@ -36,6 +41,7 @@ export class WhackMoleGame extends BaseGame {
 
   private startGame(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.score = 0;
     this.over = false;
     const seconds =
@@ -139,7 +145,16 @@ export class WhackMoleGame extends BaseGame {
     this.over = true;
     this.cleanup();
     const stars = this.score >= 15 ? 3 : this.score >= 8 ? 2 : 1;
-    this.finishClear(stars);
+    this.resetWrongStreak();
+    this.roundsDone += 1;
+    this.reportProgress(this.roundsDone, this.roundTotal);
+    this.trackTimeout(() => {
+      if (this.roundsDone >= this.roundTotal) {
+        this.finishClear(stars);
+      } else {
+        this.startGame();
+      }
+    }, 600);
   }
 
   private injectStyle(): void {

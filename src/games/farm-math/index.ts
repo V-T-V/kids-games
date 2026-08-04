@@ -16,11 +16,12 @@ export class FarmMathGame extends BaseGame {
     super("farm-math");
   }
   private roundsDone = 0;
+  private answered = false;
   private roundTotal = 0;
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -36,6 +37,8 @@ export class FarmMathGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.answered = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const animal = sample(ANIMALS);
     const [minN, maxN] = this.range();
     const op: "add" | "sub" =
@@ -80,8 +83,11 @@ export class FarmMathGame extends BaseGame {
     btn: HTMLButtonElement,
     animal: string,
   ): void {
+    if (this.answered) return;
     if (c === answer) {
+      this.answered = true;
       sfxPop();
+      this.answered = true;
       btn.classList.add("fm-choice--done");
       const r = btn.getBoundingClientRect();
       this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);

@@ -30,6 +30,7 @@ function emptyProgress(): GameProgress {
     totalDurationMs: 0,
     cleared: false,
     lastResult: null,
+    recentResults: [],
   };
 }
 
@@ -55,26 +56,38 @@ export function createEmptySave(): SaveData {
   };
 }
 
-/** 读取存档；失败/不存在时返回空白存档，永不抛错。 */
+/** 内存缓存：避免每次 loadSave 都 localStorage.getItem + JSON.parse + migrate。
+ *  writeSave/resetSave 时自动更新缓存。 */
+let saveCache: SaveData | null = null;
+
+/** 读取存档；失败/不存在时返回空白存档，永不抛错。优先走内存缓存。 */
 export function loadSave(): SaveData {
+  if (saveCache) return saveCache;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return createEmptySave();
+    if (!raw) {
+      saveCache = createEmptySave();
+      return saveCache;
+    }
     const parsed = JSON.parse(raw) as Partial<SaveData>;
-    return migrate(parsed);
+    saveCache = migrate(parsed);
+    return saveCache;
   } catch {
-    return createEmptySave();
+    saveCache = createEmptySave();
+    return saveCache;
   }
 }
 
-/** 写入存档；失败时静默忽略。 */
+/** 写入存档；失败时回滚缓存到旧值，避免刷新后进度回滚的体验欺骗。 */
 export function writeSave(data: SaveData): void {
+  const prev = saveCache;
+  saveCache = data;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    // 通知音频层刷新缓存的静音状态
     refreshAudioCache();
   } catch {
-    /* 隐私模式或容量满：忽略，游戏照常进行 */
+    // localStorage 满/隐私模式：回滚缓存到旧值，避免内存与磁盘不一致
+    saveCache = prev;
   }
 }
 
@@ -118,6 +131,9 @@ function migrate(parsed: Partial<SaveData>): SaveData {
  */
 const DIFF_RANK: Record<string, number> = { easy: 1, medium: 2, hard: 3 };
 
+/** 自适应难度参考的最近局数上限（环形缓冲）。 */
+const RECENT_RESULTS_MAX = 5;
+
 export function recordResult(save: SaveData, result: GameResult): SaveData {
   const p = save.progress[result.gameId];
   p.playCount += 1;
@@ -136,6 +152,14 @@ export function recordResult(save: SaveData, result: GameResult): SaveData {
     if (newRank > curRank) p.bestDifficulty = result.difficulty;
   }
   p.lastResult = result;
+  // 维护最近若干局环形缓冲（供自适应难度读取）
+  if (!Array.isArray(p.recentResults)) p.recentResults = [];
+  p.recentResults.push(result);
+  if (p.recentResults.length > RECENT_RESULTS_MAX) {
+    p.recentResults = p.recentResults.slice(
+      p.recentResults.length - RECENT_RESULTS_MAX,
+    );
+  }
   writeSave(save);
   return save;
 }
@@ -156,7 +180,7 @@ export function countCleared(save: SaveData): number {
   return ALL_GAME_IDS.filter((id) => save.progress[id].cleared).length;
 }
 
-/** 是否全部 8 个游戏都通关（用于解锁隐藏彩蛋）。 */
+/** 是否全部游戏都通关（用于解锁隐藏彩蛋）。 */
 export function allCleared(save: SaveData): boolean {
   return countCleared(save) === ALL_GAME_IDS.length;
 }

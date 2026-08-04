@@ -1,0 +1,20 @@
+name: kids-games
+description: 童趣游戏屋（575 个 3-6 岁儿童网页游戏）的 e2e-fusion 回归接入。
+  不改被测项目源码，用 Vite dev server 作为 SUT，Web driver（Playwright）做大厅渲染 + 游戏加载回归。
+
+runtime:
+  cwd: ../
+  build:
+    command: npm
+    args: [run, build]
+
+sources:
+  requirements:
+    - ../README.md
+  web:
+    - http://127.0.0.1:${WEB_PORT}
+
+suites:
+  smoke:
+    cases: cases
+    environment: env.local.yaml

@@ -32,7 +32,7 @@ export class SpectrumGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -51,6 +51,7 @@ export class SpectrumGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.next = 0;
 
     const n = this.count();
@@ -70,30 +71,30 @@ export class SpectrumGame extends BaseGame {
     this.display = shuffle(chosen);
 
     const wrap = document.createElement("div");
-    wrap.className = "sp-wrap";
+    wrap.className = "spc-wrap";
 
     const task = document.createElement("div");
-    task.className = "sp-task";
-    task.innerHTML = `按<span class="sp-rainbow">彩虹</span>顺序点色块：红→橙→黄→绿→青→蓝→紫<br><small>第 ${this.roundsDone + 1}/${this.roundTotal} 关</small>`;
+    task.className = "spc-task";
+    task.innerHTML = `按<span class="spc-rainbow">彩虹</span>顺序点色块：红→橙→黄→绿→青→蓝→紫<br><small>第 ${this.roundsDone + 1}/${this.roundTotal} 关</small>`;
     wrap.appendChild(task);
 
     // 上方：彩虹弧 SVG（完成后点亮）
     const arc = document.createElement("div");
-    arc.className = "sp-arc";
-    arc.id = "sp-arc";
+    arc.className = "spc-arc";
+    arc.id = "spc-arc";
     wrap.appendChild(arc);
 
     // 下方：打乱的色块
     const pool = document.createElement("div");
-    pool.className = "sp-pool";
+    pool.className = "spc-pool";
     this.display.forEach((rbIdx) => {
       const seg = RAINBOW[rbIdx]!;
       const b = document.createElement("div");
-      b.className = "sp-chip";
+      b.className = "spc-chip";
       b.style.background = `linear-gradient(160deg, ${shade(seg.color, 28)}, ${seg.color} 55%, ${shade(seg.color, -22)})`;
       b.dataset.idx = String(rbIdx);
       const lab = document.createElement("span");
-      lab.className = "sp-chip__lab";
+      lab.className = "spc-chip__lab";
       lab.textContent = seg.name;
       b.appendChild(lab);
       b.addEventListener("click", () => this.onChip(rbIdx, b));
@@ -105,17 +106,17 @@ export class SpectrumGame extends BaseGame {
   }
 
   private onChip(rbIdx: number, el: HTMLDivElement): void {
-    if (el.classList.contains("sp-chip--done")) return;
+    if (el.classList.contains("spc-chip--done")) return;
     const expect = this.seq[this.next];
     if (expect === undefined || rbIdx !== expect) {
-      el.classList.add("sp-chip--shake");
-      this.trackTimeout(() => el.classList.remove("sp-chip--shake"), 360);
+      el.classList.add("spc-chip--shake");
+      this.trackTimeout(() => el.classList.remove("spc-chip--shake"), 360);
       this.onWrong();
       return;
     }
     sfxPop();
     playNote(RAINBOW[rbIdx]!.note, 0.3);
-    el.classList.add("sp-chip--done");
+    el.classList.add("spc-chip--done");
     const r = el.getBoundingClientRect();
     this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
     this.next += 1;
@@ -124,8 +125,8 @@ export class SpectrumGame extends BaseGame {
 
     if (this.next >= this.seq.length) {
       // 完整彩虹亮起
-      const arc = this.root.querySelector("#sp-arc");
-      arc?.classList.add("sp-arc--full");
+      const arc = this.root.querySelector("#spc-arc");
+      arc?.classList.add("spc-arc--full");
       this.roundsDone += 1;
       this.trackTimeout(() => {
         if (this.roundsDone >= this.roundTotal) {
@@ -139,7 +140,7 @@ export class SpectrumGame extends BaseGame {
 
   /** 根据已选色块，绘制渐进彩虹弧（每点对一个色段亮起） */
   private renderArc(): void {
-    const arc = this.root.querySelector<HTMLElement>("#sp-arc");
+    const arc = this.root.querySelector<HTMLElement>("#spc-arc");
     if (!arc) return;
     const w = arc.clientWidth || 360;
     const h = Math.round(w * 0.5);
@@ -175,9 +176,9 @@ export class SpectrumGame extends BaseGame {
   }
 
   private injectStyle(): void {
-    if (document.getElementById("sp-style")) return;
+    if (document.getElementById("spc-style")) return;
     const st = document.createElement("style");
-    st.id = "sp-style";
+    st.id = "spc-style";
     st.textContent = SP_CSS(getCssVar("--c-indigo"));
     document.head.appendChild(st);
   }
@@ -199,21 +200,21 @@ function shade(hex: string, amt: number): string {
 
 function SP_CSS(_theme: string): string {
   return `
-.sp-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:min(640px,100%);}
-.sp-task{font-size:1.05rem;font-weight:800;text-align:center;line-height:1.7;color:var(--ink);}
-.sp-rainbow{display:inline-block;padding:1px 10px;border-radius:999px;background:linear-gradient(90deg,#ff5252,#ff9f43,#ffd93d,#6bcf7f,#22d3ee,#4d96ff,#a55eea);color:#fff;box-shadow:var(--shadow);margin:0 4px;}
-.sp-task small{color:var(--ink-soft);font-weight:700;font-size:.85rem;}
-.sp-arc{width:min(420px,92%);height:170px;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(180deg,#0b1026,#1b2150);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;padding-top:10px;}
-.sp-arc--full{animation:sp-glow 1.2s ease;}
-@keyframes sp-glow{0%{filter:brightness(1)}40%{filter:brightness(1.6)}100%{filter:brightness(1.1)}}
-.sp-pool{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:22px;background:rgba(255,255,255,.7);border-radius:24px;box-shadow:var(--shadow);}
-.sp-chip{width:78px;height:78px;border-radius:50%;cursor:pointer;position:relative;box-shadow:0 6px 14px rgba(0,0,0,.2),inset 0 -5px 9px rgba(0,0,0,.22),inset 0 5px 9px rgba(255,255,255,.35);transition:transform .18s ease;}
-.sp-chip:hover{transform:translateY(-4px) scale(1.05);}
-.sp-chip:active{transform:scale(.95);}
-.sp-chip__lab{position:absolute;inset:auto 0 8px 0;text-align:center;font-weight:800;font-size:.85rem;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);}
-.sp-chip--done{opacity:.32;transform:scale(.82);filter:grayscale(.3);}
-.sp-chip--shake{animation:sp-shake .36s ease;}
-@keyframes sp-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-5px)}}
+.spc-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:min(640px,100%);}
+.spc-task{font-size:1.05rem;font-weight:800;text-align:center;line-height:1.7;color:var(--ink);}
+.spc-rainbow{display:inline-block;padding:1px 10px;border-radius:999px;background:linear-gradient(90deg,#ff5252,#ff9f43,#ffd93d,#6bcf7f,#22d3ee,#4d96ff,#a55eea);color:#fff;box-shadow:var(--shadow);margin:0 4px;}
+.spc-task small{color:var(--ink-soft);font-weight:700;font-size:.85rem;}
+.spc-arc{width:min(420px,92%);height:170px;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(180deg,#0b1026,#1b2150);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;padding-top:10px;}
+.spc-arc--full{animation:spc-glow 1.2s ease;}
+@keyframes spc-glow{0%{filter:brightness(1)}40%{filter:brightness(1.6)}100%{filter:brightness(1.1)}}
+.spc-pool{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:22px;background:rgba(255,255,255,.7);border-radius:24px;box-shadow:var(--shadow);}
+.spc-chip{width:78px;height:78px;border-radius:50%;cursor:pointer;position:relative;box-shadow:0 6px 14px rgba(0,0,0,.2),inset 0 -5px 9px rgba(0,0,0,.22),inset 0 5px 9px rgba(255,255,255,.35);transition:transform .18s ease;}
+.spc-chip:hover{transform:translateY(-4px) scale(1.05);}
+.spc-chip:active{transform:scale(.95);}
+.spc-chip__lab{position:absolute;inset:auto 0 8px 0;text-align:center;font-weight:800;font-size:.85rem;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);}
+.spc-chip--done{opacity:.32;transform:scale(.82);filter:grayscale(.3);}
+.spc-chip--shake{animation:spc-shake .36s ease;}
+@keyframes spc-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(7px)}75%{transform:translateX(-5px)}}
 `;
 }
 

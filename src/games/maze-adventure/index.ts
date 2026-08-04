@@ -24,8 +24,12 @@ export class MazeAdventureGame extends BaseGame {
   private keyHandler: ((e: KeyboardEvent) => void) | null = null;
   private carEl!: HTMLDivElement;
   private boardEl!: HTMLDivElement;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
-  protected mount(): void {
+  private startRound(): void {
+    this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const size = this.sizeForDifficulty();
     this.cols = size;
     this.rows = size;
@@ -40,8 +44,15 @@ export class MazeAdventureGame extends BaseGame {
     this.collected = 0;
     this.px = 0;
     this.py = 0;
-    this.injectStyle();
     this.render();
+  }
+
+  protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
+    this.injectStyle();
+    this.startRound();
 
     this.keyHandler = (e: KeyboardEvent) => {
       const map: Record<string, [number, number]> = {
@@ -233,7 +244,15 @@ export class MazeAdventureGame extends BaseGame {
         expectedTotal === 0
           ? 3
           : Math.max(1, Math.round((this.collected / expectedTotal) * 3));
-      this.trackTimeout(() => this.finishClear(finalStars), 400);
+      this.roundsDone += 1;
+      this.reportProgress(this.roundsDone, this.roundTotal);
+      this.trackTimeout(() => {
+        if (this.roundsDone >= this.roundTotal) {
+          this.finishClear(finalStars);
+        } else {
+          this.startRound();
+        }
+      }, 400);
     }
   }
 

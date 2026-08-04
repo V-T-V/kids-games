@@ -51,7 +51,7 @@ export class CircuitGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -70,6 +70,7 @@ export class CircuitGame extends BaseGame {
   private startRound(): void {
     this.busy = false; // 解除过渡锁
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const { rows, cols } = this.size();
     this.rows = rows;
     this.cols = cols;

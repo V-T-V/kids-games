@@ -1,0 +1,383 @@
+/* ==========================================================================
+   学习中心 + 学习路径样式
+   复用大厅/家长面板的设计语言：--shadow / --radius / --c-* 主题色。
+   ========================================================================== */
+
+.learn,
+.learn-path {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  padding: 16px 12px 40px;
+}
+
+/* —— 头部 —— */
+.learn__header,
+.learn-path__header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.learn__back,
+.learn-path__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.learn__back:active,
+.learn-path__back:active {
+  transform: scale(0.95);
+}
+.learn__title,
+.learn-path__title {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin: 4px 0;
+}
+.learn__emoji,
+.learn-path__icon {
+  font-size: 2.2rem;
+}
+.learn__subtitle,
+.learn-path__subtitle {
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin: 4px 0 8px;
+}
+.learn-path__theory {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin: 0 0 10px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.learn__overall,
+.learn-path__progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.learn__progress-bar,
+.learn-path__progress-track,
+.learn-card__progress-track {
+  width: 160px;
+  height: 14px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.learn__progress-fill,
+.learn-path__progress-fill,
+.learn-card__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-green), var(--c-teal));
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.learn__overall-chip {
+  padding: 4px 12px;
+  background: var(--white);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 0.82rem;
+}
+
+/* —— 6 大发展领域概览 —— */
+.learn__domains {
+  margin-bottom: 20px;
+}
+.learn__domains-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+.learn__domains-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.learn__domain-chip {
+  position: relative;
+  background: var(--white);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--domain-color, var(--c-blue));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+.learn__domain-icon {
+  font-size: 1.2rem;
+}
+.learn__domain-name {
+  flex: 1;
+}
+.learn__domain-prog {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.learn__domain-bar {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.learn__domain-fill {
+  height: 100%;
+  background: var(--domain-color, var(--c-blue));
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* —— 智能推荐卡片 —— */
+.learn__recommend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--rec-color, #4d96ff) 15%, #fff), #fff);
+  border: 2px solid var(--rec-color, #4d96ff);
+  box-shadow: var(--shadow);
+  text-align: left;
+  margin-bottom: 16px;
+  transition: transform 0.12s ease;
+}
+.learn__recommend:active {
+  transform: scale(0.98);
+}
+.learn__recommend-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.learn__recommend-body {
+  flex: 1;
+  min-width: 0;
+}
+.learn__recommend-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rec-color, #4d96ff);
+  text-transform: uppercase;
+}
+.learn__recommend-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.learn__recommend-hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.learn__recommend-go {
+  font-size: 1.2rem;
+  color: var(--rec-color, #4d96ff);
+  flex-shrink: 0;
+}
+
+/* —— 路径卡片网格（学习中心）—— */
+.learn__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+.learn-card {
+  position: relative;
+  text-align: center;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 22px 16px 18px;
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  overflow: hidden;
+}
+.learn-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--path-color, var(--c-blue));
+  opacity: 0.1;
+  z-index: 0;
+}
+.learn-card > * {
+  position: relative;
+  z-index: 1;
+}
+.learn-card:active {
+  transform: scale(0.97) translateY(2px);
+}
+.learn-card__done {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 1.4rem;
+  z-index: 2;
+}
+.learn-card__icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+}
+.learn-card__title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin: 6px 0 2px;
+}
+.learn-card__age {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.learn-card__subtitle {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 8px 0 12px;
+  min-height: 2.4em;
+}
+.learn-card__progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.learn-card__progress-track {
+  width: 100px;
+  height: 10px;
+}
+.learn-card__cta {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--path-color, var(--c-blue));
+}
+
+/* —— 路径详情：有序步骤列表 —— */
+.learn-path__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.learn-step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  text-align: left;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+  border: 3px solid transparent;
+}
+.learn-step:active {
+  transform: scale(0.98);
+}
+.learn-step--current {
+  border-color: var(--step-color, var(--c-blue));
+  background: #fffbe6;
+}
+.learn-step--done {
+  opacity: 0.85;
+}
+.learn-step--locked {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+}
+.learn-step--locked:active {
+  transform: none;
+}
+.learn-step__num {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--step-color, var(--c-blue));
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.learn-step__body {
+  flex: 1;
+  min-width: 0;
+}
+.learn-step__title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.learn-step__meta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.learn-step__hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.learn-step__go {
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--step-color, var(--c-blue));
+}
+.learn-path__complete {
+  margin-top: 20px;
+  padding: 18px;
+  background: linear-gradient(135deg, #fff3cd, #ffe8a3);
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+}
+
+/* 触控设备：放大返回/卡片命中区 */
+@media (pointer: coarse) {
+  .learn__back,
+  .learn-path__back {
+    min-height: 44px;
+  }
+  .learn-step {
+    min-height: 60px;
+  }
+}

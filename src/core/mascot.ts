@@ -32,8 +32,17 @@ export function showMascot(x?: number, y?: number): void {
   }
 }
 
-/** 隐藏吉祥物。 */
+/** 隐藏吉祥物。同时取消任何挂起的显示/气泡定时器，防止跨游戏串场。 */
 export function hideMascot(): void {
+  if (hideTimer !== null) {
+    window.clearTimeout(hideTimer);
+    hideTimer = null;
+  }
+  if (bubbleTimer !== null) {
+    window.clearTimeout(bubbleTimer);
+    bubbleTimer = null;
+  }
+  bubble()?.classList.remove("mascot__bubble--show");
   el()?.classList.add("mascot--hidden");
   setMood("idle");
 }

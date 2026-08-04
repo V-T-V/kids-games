@@ -32,7 +32,7 @@ export class StrokeOrderGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -49,6 +49,7 @@ export class StrokeOrderGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const entry = sample(this.pool());
     const ordered = entry.strokes;
     // 卡片：打乱顺序，记录每张卡的原始 label

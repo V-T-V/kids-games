@@ -42,6 +42,8 @@ export class PinballGame extends BaseGame {
   private c2d!: CanvasRenderingContext2D;
   private raf = 0;
   private over = false;
+  private roundsDone = 0;
+  private roundTotal = 0;
 
   private W = 0;
   private H = 0;
@@ -59,6 +61,9 @@ export class PinballGame extends BaseGame {
     this.ballsLeft =
       this.difficulty === "easy" ? 8 : this.difficulty === "medium" ? 7 : 6;
     this.injectStyle();
+    this.roundTotal =
+      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundsDone = 0;
     this.setup();
   }
   protected unmount(): void {
@@ -68,6 +73,7 @@ export class PinballGame extends BaseGame {
 
   private setup(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.over = false;
     this.score = 0;
     this.balls = [];
@@ -257,9 +263,11 @@ export class PinballGame extends BaseGame {
     if (this.ballsLeft <= 0 && this.balls.length === 0 && !this.over) {
       this.over = true;
       cancelAnimationFrame(this.raf);
-      const reached = this.score >= this.target;
+      this.resetWrongStreak();
+      this.roundsDone += 1;
+      this.reportProgress(this.roundsDone, this.roundTotal);
       this.trackTimeout(() => {
-        if (reached) {
+        if (this.roundsDone >= this.roundTotal) {
           this.finishClear(
             starsByScore(this.score, [
               this.target,
@@ -267,10 +275,9 @@ export class PinballGame extends BaseGame {
             ]),
           );
         } else {
-          // 未达标也算"玩完"，给鼓励星级（1 星）
-          this.finishClear(1);
+          this.setup();
         }
-      }, 700);
+      }, 600);
     }
   }
 

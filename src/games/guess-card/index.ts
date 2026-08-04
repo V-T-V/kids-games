@@ -18,15 +18,18 @@ export class GuessCardGame extends BaseGame {
     super("guess-card");
   }
 
+  private roundsDone = 0;
+  private roundTotal = 0;
   private streak = 0;
-  private target = 0;
+  private streakTarget = 0;
   private maxNum = 0;
   private current = 0;
   private locked = false;
 
   protected mount(): void {
-    this.target =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
+    this.streakTarget = 2;
     this.maxNum =
       this.difficulty === "easy" ? 6 : this.difficulty === "medium" ? 8 : 10;
     this.injectStyle();
@@ -38,7 +41,9 @@ export class GuessCardGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.locked = false;
+    this.streak = 0;
     this.current = randInt(1, this.maxNum);
 
     const wrap = document.createElement("div");
@@ -46,12 +51,12 @@ export class GuessCardGame extends BaseGame {
 
     const task = document.createElement("div");
     task.className = "gc-task";
-    task.innerHTML = `下一张数字会 <b>更大</b> 还是 <b>更小</b>？<br><small>（连续猜对 ${this.target} 次通关）</small>`;
+    task.innerHTML = `下一张数字会 <b>更大</b> 还是 <b>更小</b>？<br><small>（第 ${this.roundsDone + 1}/${this.roundTotal} 关 · 连续猜对 ${this.streakTarget} 次过关）</small>`;
     wrap.appendChild(task);
 
     const progress = document.createElement("div");
     progress.className = "gc-progress";
-    progress.innerHTML = `连胜：<b>${this.streak}</b> / ${this.target}`;
+    progress.innerHTML = `本关连胜：<b>${this.streak}</b> / ${this.streakTarget} · 已过 <b>${this.roundsDone}</b>/${this.roundTotal} 关`;
     wrap.appendChild(progress);
 
     const stage = document.createElement("div");
@@ -121,8 +126,14 @@ export class GuessCardGame extends BaseGame {
           );
           next.classList.add("gc-card--win");
           this.trackTimeout(() => {
-            if (this.streak >= this.target) {
-              this.finishClear(starsByAccuracy(this.wrongCount));
+            if (this.streak >= this.streakTarget) {
+              this.roundsDone += 1;
+              if (this.roundsDone >= this.roundTotal) {
+                this.finishClear(starsByAccuracy(this.wrongCount));
+              } else {
+                this.current = nextVal;
+                this.startRound();
+              }
             } else {
               this.current = nextVal;
               this.startRound();

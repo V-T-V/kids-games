@@ -59,6 +59,41 @@ const QUESTIONS: WeatherQ[] = [
     clues: ["白茫茫一片 ⚪", "看不清远处 👀"],
     options: ["雾天", "彩虹", "大风", "晴天"],
   },
+  {
+    weather: "多云",
+    emoji: "⛅",
+    scene: "linear-gradient(180deg,#a8c6e8,#cfe3f5)",
+    clues: ["天空有些云 ☁️", "太阳时隐时现 🌤️"],
+    options: ["多云", "晴天", "大风", "雷雨"],
+  },
+  {
+    weather: "阴天",
+    emoji: "🌩️",
+    scene: "linear-gradient(180deg,#7c8aa0,#a3b0c2)",
+    clues: ["天空灰灰的 🩶", "云层厚厚的遮住太阳 ☁️"],
+    options: ["阴天", "晴天", "雾天", "大风"],
+  },
+  {
+    weather: "下雨",
+    emoji: "🌧️",
+    scene: "linear-gradient(180deg,#6b8cae,#9fb6cf)",
+    clues: ["天上有乌云 ☁️", "空气湿湿的 💧"],
+    options: ["下雨", "下雪", "雾天", "大风"],
+  },
+  {
+    weather: "冰雹",
+    emoji: "🧊",
+    scene: "linear-gradient(180deg,#c2d0e0,#e4ecf5)",
+    clues: ["天上掉下硬硬的冰球 🧊", "打在窗户上叮叮响 🔔"],
+    options: ["冰雹", "下雪", "雷雨", "晴天"],
+  },
+  {
+    weather: "雷暴",
+    emoji: "⛈️",
+    scene: "linear-gradient(180deg,#2f3b55,#1a2238)",
+    clues: ["闪电一道道 ⚡", "雷声轰隆隆 📢"],
+    options: ["雷暴", "下雨", "大风", "雾天"],
+  },
 ];
 
 export class WeatherForecastGame extends BaseGame {
@@ -72,7 +107,7 @@ export class WeatherForecastGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     // 按难度决定干扰项数（选项数）
     this.optCount =
       this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 4;
@@ -92,6 +127,7 @@ export class WeatherForecastGame extends BaseGame {
   private startRound(): void {
     this.root.innerHTML = "";
     this.answered = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const q = this.order[this.roundsDone % this.order.length] ?? QUESTIONS[0]!;
 
     const wrap = document.createElement("div");

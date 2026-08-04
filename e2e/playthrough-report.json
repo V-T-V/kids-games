@@ -1,0 +1,203 @@
+{
+  "total": 128,
+  "passed": 79,
+  "failed": 0,
+  "details": [
+    {
+      "gid": "color-mixer",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "shape-match",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "letter-bee",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "music-stairs",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "jigsaw",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "antonym",
+      "reason": "尝试7次未通关"
+    },
+    {
+      "gid": "mini-sudoku",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "draw-along",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "calendar",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "money",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "bottle-cap",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "star-map",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "day-night",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "tool-match",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "size-recipe",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "memory-tray",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "price-tag",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "story-order",
+      "reason": "尝试6次未通关"
+    },
+    {
+      "gid": "sentence-build",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "opposite-match",
+      "reason": "尝试10次未通关"
+    },
+    {
+      "gid": "sequence-word",
+      "reason": "尝试5次未通关"
+    },
+    {
+      "gid": "warm-cool",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "color-name",
+      "reason": "尝试3次未通关"
+    },
+    {
+      "gid": "shape-name",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "opposite-act",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "same-different",
+      "reason": "尝试4次未通关"
+    },
+    {
+      "gid": "part-whole",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "brush-teeth",
+      "reason": "尝试7次未通关"
+    },
+    {
+      "gid": "wash-hands",
+      "reason": "尝试6次未通关"
+    },
+    {
+      "gid": "dress-order",
+      "reason": "尝试4次未通关"
+    },
+    {
+      "gid": "cross-road",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "healthy-eat",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "pack-bag",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "tidy-room",
+      "reason": "尝试1次未通关"
+    },
+    {
+      "gid": "world-landmark",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "color-feeling",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "story-moral",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "fairytale",
+      "reason": "尝试3次未通关"
+    },
+    {
+      "gid": "count-song",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "mirror-word",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "color-fill",
+      "reason": "尝试40次未通关"
+    },
+    {
+      "gid": "domino",
+      "reason": "尝试7次未通关"
+    },
+    {
+      "gid": "dice-roll",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "card-deal",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "coin-flip",
+      "reason": "尝试2次未通关"
+    },
+    {
+      "gid": "relay-baton",
+      "reason": "尝试4次未通关"
+    },
+    {
+      "gid": "soccer-pass",
+      "reason": "尝试4次未通关"
+    },
+    {
+      "gid": "karate-belt",
+      "reason": "尝试6次未通关"
+    },
+    {
+      "gid": "flag-raising",
+      "reason": "尝试6次未通关"
+    }
+  ]
+}

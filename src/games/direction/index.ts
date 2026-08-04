@@ -27,12 +27,13 @@ export class DirectionGame extends BaseGame {
     super("direction");
   }
   private roundsDone = 0;
+  private answered = false;
   private roundTotal = 0;
   private reverseMode = false; // hard 档：问"反方向"增加难度
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -62,6 +63,8 @@ export class DirectionGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.answered = false;
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const pool = this.dirPool();
     const target = sample(pool);
     // hard 档有 40% 概率问反方向（增加认知难度）
@@ -97,9 +100,11 @@ export class DirectionGame extends BaseGame {
 
   private choose(d: string, target: string, btn: HTMLButtonElement): void {
     // 反方向模式：正确答案是 target 的反向；正方向模式：正确答案是 target 本身
+    if (this.answered) return;
     const answer = this.reverseMode ? this.opposite(target) : target;
     if (d === answer) {
       sfxPop();
+      this.answered = true;
       btn.classList.add("dr-opt--done");
       const r = btn.getBoundingClientRect();
       this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);

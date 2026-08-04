@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="kids-games-02-all-games-mount" tests="25" failures="13" time="1507.50">
+    <testcase classname="kids-games-02-all-games-mount" name="web:waitFor" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#4 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#6 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#8 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#10 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#12 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#14 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#16 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#18 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:sleep" time="0"/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#20 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#21 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:evaluate" time="0"
+      <failure message="step#22 evaluate @web超时 (120000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:screenshot" time="0"
+      <failure message="运行超时 (1500000ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="web:driver.shutdown" time="0"
+      <failure message="driver shutdown 失败：driver web shutdown超时 (6100ms)"/>/>
+    <testcase classname="kids-games-02-all-games-mount" name="run-level-error" time="0"><failure message="运行超时 (1500000ms)"/></testcase>
+</testsuite>

@@ -11,13 +11,17 @@ export class JigsawGame extends BaseGame {
     super("jigsaw");
   }
 
+  private roundTotal = 0;
+  private roundsDone = 0;
   private grid = 2;
   private tiles: number[] = []; // 当前每个位置的「正确编号」
   private moves = 0;
 
   protected mount(): void {
     this.grid =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -26,6 +30,7 @@ export class JigsawGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
     const n = this.grid * this.grid;
     const correct = Array.from({ length: n }, (_, i) => i);
@@ -83,17 +88,20 @@ export class JigsawGame extends BaseGame {
     sfxPop();
     if (this.tiles.every((v, i) => v === i)) {
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
-      this.trackTimeout(
-        () =>
+      this.trackTimeout(() => {
+        this.roundsDone += 1;
+        if (this.roundsDone >= this.roundTotal) {
           this.finishClear(
             this.moves <= this.grid * 3
               ? 3
               : this.moves <= this.grid * 6
                 ? 2
                 : 1,
-          ),
-        900,
-      );
+          );
+        } else {
+          this.startRound();
+        }
+      }, 900);
     }
   }
 

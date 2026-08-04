@@ -47,7 +47,7 @@ export class TimeTimelineGame extends BaseGame {
     this.roundTotal =
       this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 3 : 4;
     this.cardCount =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -59,6 +59,7 @@ export class TimeTimelineGame extends BaseGame {
     this.locked = false;
     this.selectedIdx = -1;
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     // 从池中随机取 cardCount 个不同活动
     this.remaining = shuffle(POOL).slice(0, this.cardCount);
     this.placed = new Array(this.cardCount).fill(null);

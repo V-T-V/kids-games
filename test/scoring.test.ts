@@ -57,3 +57,14 @@ test("minStars 取最小", () => {
   assert.equal(minStars(1, 3), 1);
   assert.equal(minStars(), 3);
 });
+
+// 动作/反应类游戏的统一算星约定（见 scoring.ts 头注释）：
+// 按本局失误数 wrongCount 用 starsByAccuracy(wrongCount, [0, 2]) 算星。
+// 锁住阈值，防退化回"必 3 星"（曾用 starsByScore(need,[need,need]) 导致永远 3★）。
+test("动作游戏算星约定 starsByAccuracy(wrongCount, [0,2])", () => {
+  assert.equal(starsByAccuracy(0, [0, 2]), 3); // 0 失误 → 3★（完美通关）
+  assert.equal(starsByAccuracy(1, [0, 2]), 2); // 1 失误 → 2★
+  assert.equal(starsByAccuracy(2, [0, 2]), 2); // 2 失误 → 2★
+  assert.equal(starsByAccuracy(3, [0, 2]), 1); // ≥3 失误 → 1★
+  assert.equal(starsByAccuracy(5, [0, 2]), 1); // 更多失误仍通关 → 1★
+});

@@ -23,6 +23,22 @@ const DATA: MwItem[] = [
   { noun: "车", emoji: "🚗", measure: "辆" },
   { noun: "水", emoji: "💧", measure: "杯" },
   { noun: "纸", emoji: "📄", measure: "张" },
+  { noun: "狗", emoji: "🐶", measure: "只" },
+  { noun: "鸟", emoji: "🐦", measure: "只" },
+  { noun: "笔", emoji: "✏️", measure: "支" },
+  { noun: "刀", emoji: "🔪", measure: "把" },
+  { noun: "伞", emoji: "☂️", measure: "把" },
+  { noun: "鞋", emoji: "👟", measure: "双" },
+  { noun: "筷子", emoji: "🥢", measure: "双" },
+  { noun: "苹果", emoji: "🍎", measure: "个" },
+  { noun: "鸡蛋", emoji: "🥚", measure: "个" },
+  { noun: "星星", emoji: "⭐", measure: "颗" },
+  { noun: "珍珠", emoji: "⚪", measure: "颗" },
+  { noun: "衣服", emoji: "👕", measure: "件" },
+  { noun: "窗户", emoji: "🪟", measure: "扇" },
+  { noun: "桥", emoji: "🌉", measure: "座" },
+  { noun: "山", emoji: "⛰️", measure: "座" },
+  { noun: "画", emoji: "🖼️", measure: "幅" },
 ];
 
 const ALL_MEASURES = DATA.map((d) => d.measure);
@@ -37,7 +53,7 @@ export class MeasureWordGame extends BaseGame {
 
   protected mount(): void {
     this.roundTotal =
-      this.difficulty === "easy" ? 3 : this.difficulty === "medium" ? 4 : 5;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -47,9 +63,10 @@ export class MeasureWordGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     const item = sample(DATA);
     const distractN =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const distract = shuffle(
       UNIQUE_MEASURES.filter((m) => m !== item.measure),
     ).slice(0, distractN);

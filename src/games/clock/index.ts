@@ -38,6 +38,7 @@ export class ClockGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.targetHour = randInt(1, 12);
     // easy=整点, medium=半点, hard=一刻/整点/半点
     const minPool =
@@ -195,7 +196,7 @@ function CK_CSS(theme: string): string {
   return `
 .ck-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;width:min(420px,100%);}
 .ck-task{font-size:1.2rem;font-weight:800;text-align:center;}
-.ck-face{position:relative;width:240px;height:240px;border-radius:50%;background:#fff;box-shadow:var(--shadow);border:8px solid ${theme};}
+.ck-face{position:relative;width:240px;height:240px;border-radius:50%;background:#fff;box-shadow:var(--shadow);border:8px solid ${theme};touch-action:none;cursor:grab;}
 .ck-num{position:absolute;width:28px;height:32px;font-size:1.3rem;font-weight:800;color:var(--ink);text-align:center;}
 .ck-hand{position:absolute;left:50%;top:50%;transform-origin:bottom center;border-radius:4px;}
 .ck-hand--min{width:5px;height:96px;background:var(--ink);}

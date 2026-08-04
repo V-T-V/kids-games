@@ -48,10 +48,14 @@ export class TidyUpGame extends BaseGame {
   constructor() {
     super("tidy-up");
   }
+  private roundsDone = 0;
+  private roundTotal = 0;
   private unbinds: (() => void)[] = [];
   private remaining = 0;
 
   protected mount(): void {
+    this.roundTotal =
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     this.injectStyle();
     this.startRound();
   }
@@ -62,10 +66,11 @@ export class TidyUpGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
+    this.reportProgress(this.roundsDone, this.roundTotal);
     this.unbinds.forEach((u) => u());
     this.unbinds = [];
     const binCount =
-      this.difficulty === "easy" ? 2 : this.difficulty === "medium" ? 3 : 4;
+      this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
     const per = this.difficulty === "hard" ? 3 : 2;
     const bins = shuffle(BINS).slice(0, binCount);
     const allItems: { emoji: string; bin: string }[] = [];
@@ -80,7 +85,7 @@ export class TidyUpGame extends BaseGame {
     wrap.className = "tu-wrap";
     const task = document.createElement("div");
     task.className = "tu-task";
-    task.textContent = "把东西放回该放的地方～";
+    task.innerHTML = `把东西放回该放的地方～（第 ${this.roundsDone + 1}/${this.roundTotal} 关）`;
     wrap.appendChild(task);
 
     const itemArea = document.createElement("div");
@@ -156,10 +161,14 @@ export class TidyUpGame extends BaseGame {
           this.onCorrect(r.left + r.width / 2, r.top);
           this.resetWrongStreak();
           if (this.remaining <= 0)
-            this.trackTimeout(
-              () => this.finishClear(starsByAccuracy(this.wrongCount)),
-              900,
-            );
+            this.trackTimeout(() => {
+              this.roundsDone += 1;
+              if (this.roundsDone >= this.roundTotal) {
+                this.finishClear(starsByAccuracy(this.wrongCount));
+              } else {
+                this.startRound();
+              }
+            }, 900);
         } else {
           it.el.style.position = "";
           it.el.style.left = "";
