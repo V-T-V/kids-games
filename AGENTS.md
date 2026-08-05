@@ -22,7 +22,7 @@
 - **favorites 收藏夹 + recent 最近玩过**：独立 localStorage key，大厅快捷区横向滚动卡片 + 每张游戏卡片 ⭐ 角标。
 - **ui/ + lobby/**：Button / Overlay / ParentPanel（含反馈管理 + 成就墙 + 家长报告 + 反馈同步开关）/ Lobby（分块渲染 + 学习中心入口 + 收藏/最近快捷区）/ toast / contentFilters（能力域/年龄/时长/通关/搜索组合筛选）
 - **PWA**：sw.js v5（stale-while-revalidate）+ manifest（standalone，主题色 #ffd166），可离线安装
-- **测试 137 个（19 文件）**：核心算法 + registry 一致性（目录↔注册表 fs 硬校验）+ 存档 + 成就（含路径成就）+ 反馈（含离线队列/重试）+ 自适应 + 家长报告 + 评分 + 大厅筛选 + PWA + **游戏契约**（create 导出/extends BaseGame/CSS 前缀唯一）+ **学习路径**（路径有效性/完成度）+ favorites + sync
+- **测试 227 个（19 文件）**：核心算法 + registry 一致性（目录↔注册表 fs 硬校验）+ 存档（含错误路径加固）+ 成就（38 成就元数据/累计型解锁/品类映射/路径成就/隐藏成就深层分支/hint 非空）+ 反馈（含离线队列/重试/countHardFeedback/exportFeedback）+ 自适应（rank/bump幂等/太难反馈降档链）+ 家长报告（含 6 领域 buildDomainReport）+ 评分 + 大厅筛选（含拼音搜索/时长估算）+ **夸赞文案池**（情感安全黑名单+不重复）+ PWA + **游戏契约**（create 导出/extends BaseGame/CSS 前缀唯一）+ **学习路径**（路径有效性/完成度）+ favorites + sync
 - **e2e-fusion 接入**：`e2e/` 目录含 descriptor + smoke suite（01 大厅+20 代表游戏 / 02 全 575 游戏挂载验证，已实证 522 游戏挂载绿）+ 多轮 playthrough/screenshot 脚本，`pnpm e2e project run` 可跑回归
 
 ## 技术栈与架构
@@ -51,7 +51,7 @@ npm install
 npm run dev          # Vite 开发服务器
 npm run build        # 生产构建（dist/，PWA）
 npm run preview      # 预览构建产物
-npx tsx --test test/*.test.ts   # 137 个测试（19 文件）
+npx tsx --test test/*.test.ts   # 227 个测试（19 文件）
 npx tsc --noEmit     # 类型检查
 npx eslint src --quiet          # lint
 # e2e 回归（需 e2e-fusion 仓库）
@@ -83,7 +83,7 @@ cd D:/M_X_M/e2e-fusion && pnpm e2e project run D:/M_X_M/kids-games/e2e/e2e.proje
 | 存档                 | `core/storage.ts`         | ✅ 完整 | localStorage + 容错迁移 + 损坏 JSON 兜底                    |
 | 输入抽象             | `core/input.ts`           | ✅ 完整 | PointerEvent 统一触屏/鼠标                                  |
 | 评分                 | `core/scoring.ts`         | ✅ 完整 | 分数计算 / 连击 / 衰减 / 最高分持久化                       |
-| 成就                 | `core/achievements.ts`    | ✅ 完整 | 32 成就 4 大类 + 累计型自动检测                             |
+| 成就                 | `core/achievements.ts`    | ✅ 完整 | 38 成就 4 大类（里程碑7/品类8/技能14/隐藏9）+ 累计型自动检测 |
 | 难度自适应           | `core/adaptive.ts`        | ✅ 完整 | 2 局窗口升降档 + 反馈降档信号                               |
 | 家长报告             | `core/parentReport.ts`    | ✅ 完整 | 能力概览 + 优势/练习 Top3 + 推荐下一步                      |
 | 反馈闭环             | `core/feedback.ts`        | ✅ 完整 | 收集→存储→展示→行动，联动难度降档                           |
@@ -92,26 +92,28 @@ cd D:/M_X_M/e2e-fusion && pnpm e2e project run D:/M_X_M/kids-games/e2e/e2e.proje
 | 大厅筛选             | `lobby/contentFilters.ts` | ✅ 完整 | 能力域/年龄/时长/通关/搜索组合                              |
 | 游戏内容             | `games/*/index.ts`        | ✅ 完整 | 575 个独立游戏，含 colorMath/maze/pathfind/pattern 算法模块 |
 
-## 测试覆盖（124 项 / 17 文件）
+## 测试覆盖（227 项 / 19 文件）
 
 | 测试文件                | 数量 | 覆盖点                                                      |
 | ----------------------- | ---- | ----------------------------------------------------------- |
-| `achievements.test.ts`  | 9    | 32 成就元数据 / 累计型解锁 / 品类映射 / hint 非空           |
-| `adaptive.test.ts`      | 13   | 升降档规则 / 边界 / 反馈降档信号 / resolveDifficulty 优先级 |
+| `achievements.test.ts`  | 26   | 38 成就元数据 / 累计型解锁 / 品类映射 / hint 非空 / hard-master/collector/persistent/explorer/three-star-15/jack-of-all 深层分支 / 梯度里程碑 / id 唯一 |
+| `adaptive.test.ts`      | 24   | 升降档规则 / 边界 / 反馈降档信号 / resolveDifficulty 优先级 / rank / bump 幂等 / 升档须连续2局满分 / 太难反馈降档链 |
 | `colorMath.test.ts`     | 10   | 减色法混合 / 目标色匹配 / 评星                              |
 | `favorites.test.ts`     | 11   | 收藏排序/分组/统计/导出/清理无效 id/收藏内搜索              |
-| `feedback.test.ts`      | 6    | 反馈收集/标记/删除/导出/事件触发                            |
+| `feedback.test.ts`      | 19   | 反馈收集/标记/删除/导出/countHardFeedback 难度降档信号/exportFeedback 文本格式+上下文/200条上限/FEEDBACK_TYPES 元数据 |
 | `game-contract.test.ts` | 3    | 游戏导出契约（create/destroy 签名一致性）                   |
-| `lobby_filters.test.ts` | 4    | 能力域/年龄/时长/通关状态组合筛选                           |
+| `learn.test.ts`         | 19   | 学习路径有效性/完成度 + 理论模型（6 领域/认知层/bloom 分布） |
+| `lobby_filters.test.ts` | 20   | 能力域/年龄/时长/通关/搜索组合 / categoryOf / parseAgeRange 正则边界 / estimateMinutes 6 类时长估算 / 拼音首字母搜索 |
 | `loop.test.ts`          | 4    | RAF 步长限制 / motionScale / dt 钳制                        |
 | `maze.test.ts`          | 6    | DFS 迷宫生成 / 可达性 / 星星分布                            |
-| `parentReport.test.ts`  | 3    | 能力概览 / 优势排序 / 推荐游戏                              |
+| `parentReport.test.ts`  | 13   | 能力概览 / 优势排序 / 推荐游戏 / buildDomainReport 6 领域归类 / recommendGames 去重排序 / formatParentSummary 边界 |
 | `pathfind.test.ts`      | 6    | A\* / 启发式 / 障碍绕行                                     |
 | `pattern.test.ts`       | 5    | 序列规律识别（等差/几何/斐波那契）                          |
+| `praise.test.ts`        | 7    | 夸赞文案池永不出现否定词 / 永不连续重复 / 池非空 / 语义正向 |
 | `pwa.test.ts`           | 3    | manifest 字段 / SW 缓存策略 / 图标                          |
 | `registry.test.ts`      | 6    | 575 id 唯一 / 字段非空 / 目录↔注册表硬校验 / types.ts 一致  |
 | `scoring.test.ts`       | 9    | 分数 / 连击 / 衰减 / 最高分持久化                           |
-| `storage.test.ts`       | 10   | 存档读写 / recordResult / 容错 / reset                      |
+| `storage.test.ts`       | 20   | 存档读写 / recordResult / 容错 / reset / getItem+setItem 抛错兜底 / durationMs NaN防护 / recentResults 环形缓冲 / migrate 字段补全 |
 | `sync.test.ts`          | 16   | 离线入队 / 去重 / 重试 / 幂等 / 上限截断 / flushAll         |
 
 ## 下一步（Next）
