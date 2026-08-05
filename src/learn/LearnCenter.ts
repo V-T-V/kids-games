@@ -122,7 +122,6 @@ function makePathCard(
   const total = path.games.length;
   const pct = total > 0 ? Math.round((cleared / total) * 100) : 0;
   const done = cleared >= total;
-  const inProgress = cleared > 0 && !done;
   const color = getCssVar(path.themeVar);
 
   const card = document.createElement("button");
