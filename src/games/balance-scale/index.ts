@@ -8,6 +8,7 @@ import { starsByAccuracy } from "../../core/scoring.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
+import { buildPool } from "./pool.ts";
 
 export class BalanceScaleGame extends BaseGame {
   constructor() {
@@ -123,25 +124,9 @@ export class BalanceScaleGame extends BaseGame {
 
   /** 构造候选砝码池：保证能凑出 target，且有若干干扰。 */
   private buildPool(target: number): number[] {
-    const pool: number[] = [];
-    // 先放一个等于 target 的解（保证可解），简单关友好
-    if (target <= 3) pool.push(target);
-    else {
-      // 拆成若干 1-3
-      let rest = target;
-      while (rest > 0) {
-        const take = Math.min(3, rest);
-        pool.push(take);
-        rest -= take;
-      }
-    }
-    // 干扰
     const distract =
       this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
-    for (let i = 0; i < distract; i++) {
-      pool.push(Math.floor(Math.random() * 3) + 1);
-    }
-    return pool;
+    return buildPool(target, distract);
   }
 
   private add(value: number, btn: HTMLButtonElement): void {

@@ -9,18 +9,7 @@ import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
 import { starsByAccuracy } from "../../core/scoring.ts";
-
-// 3x3 八条可能的获胜线
-const LINES: number[][] = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
+import { nextCallIndex, completedLines } from "./lines.ts";
 
 export class BingoCardGame extends BaseGame {
   constructor() {
@@ -100,31 +89,8 @@ export class BingoCardGame extends BaseGame {
 
   /** 喊下一个未被点的网格数字（保证一定可点中，导向宾果）。 */
   private nextCall(): void {
-    // 选一条尚未达成、且当前点亮的格子最多的线作为「目标线」
-    const remaining = LINES.filter(
-      (ln) => !ln.every((i) => this.marked.has(i)),
-    );
-    let target: number[] = remaining[0]!;
-    let best = -1;
-    for (const ln of remaining) {
-      const cnt = ln.filter((i) => this.marked.has(i)).length;
-      // 优先 cnt 接近 2 的线（差一个就成）
-      if (cnt > best) {
-        best = cnt;
-        target = ln;
-      }
-    }
-    // 在目标线上找一个还没被点亮、且数字还没被喊过的格子
-    const candidate = target.find((i) => !this.marked.has(i));
-    if (candidate === undefined) {
-      // 兜底：任意未点亮
-      const fallback = shuffle(Array.from({ length: 9 }, (_, i) => i)).find(
-        (i) => !this.marked.has(i),
-      )!;
-      this.currentCall = this.cells[fallback]!;
-    } else {
-      this.currentCall = this.cells[candidate]!;
-    }
+    const idx = nextCallIndex(this.marked);
+    this.currentCall = idx >= 0 ? this.cells[idx]! : 0;
     const numEl = this.root.querySelector<HTMLElement>("#bng-call-num");
     if (numEl) {
       numEl.textContent = String(this.currentCall);
@@ -154,7 +120,7 @@ export class BingoCardGame extends BaseGame {
     this.resetWrongStreak();
 
     // 检查新成线
-    const newLines = LINES.filter((ln) => ln.every((i) => this.marked.has(i)));
+    const newLines = completedLines(this.marked);
     const linesEl = this.root.querySelector<HTMLElement>("#bng-lines");
     if (newLines.length > this.madeLines) {
       this.madeLines = newLines.length;
