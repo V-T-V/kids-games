@@ -8,8 +8,14 @@ import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar } from "../../lobby/util.ts";
 import { starsByMoves } from "../../core/scoring.ts";
-
-type Dir = "up" | "down" | "left" | "right";
+import {
+  type Dir,
+  collapse,
+  extract,
+  apply,
+  hasMoves,
+  maxValue,
+} from "./engine.ts";
 
 const COLORS: Record<number, string> = {
   2: "#eee4da",
@@ -174,7 +180,7 @@ export class Game2048 extends BaseGame {
       this.render(mergedAny);
       sfxPop();
       // 检查通关
-      const maxVal = Math.max(...this.board.flat());
+      const maxVal = maxValue(this.board);
       if (maxVal >= this.target && !this.won) {
         this.won = true;
         this.over = true;
@@ -214,76 +220,20 @@ export class Game2048 extends BaseGame {
 
   /** 按方向提取 4 条线（每条线是该方向上要合并的序列）。 */
   private extract(dir: Dir): number[][] {
-    const lines: number[][] = [];
-    if (dir === "left") {
-      for (let r = 0; r < 4; r++) lines.push([...this.board[r]!]);
-    } else if (dir === "right") {
-      for (let r = 0; r < 4; r++) lines.push([...this.board[r]!].reverse());
-    } else if (dir === "up") {
-      for (let c = 0; c < 4; c++)
-        lines.push([
-          this.board[0]![c]!,
-          this.board[1]![c]!,
-          this.board[2]![c]!,
-          this.board[3]![c]!,
-        ]);
-    } else {
-      for (let c = 0; c < 4; c++)
-        lines.push([
-          this.board[3]![c]!,
-          this.board[2]![c]!,
-          this.board[1]![c]!,
-          this.board[0]![c]!,
-        ]);
-    }
-    return lines;
+    return extract(this.board, dir);
   }
 
   private apply(dir: Dir, lines: number[][]): void {
-    if (dir === "left") {
-      for (let r = 0; r < 4; r++) this.board[r] = lines[r]!;
-    } else if (dir === "right") {
-      for (let r = 0; r < 4; r++) this.board[r] = lines[r]!.reverse();
-    } else if (dir === "up") {
-      for (let c = 0; c < 4; c++) {
-        for (let r = 0; r < 4; r++) this.board[r]![c] = lines[c]![r]!;
-      }
-    } else {
-      for (let c = 0; c < 4; c++) {
-        for (let r = 0; r < 4; r++) this.board[3 - r]![c] = lines[c]![r]!;
-      }
-    }
+    this.board = apply(this.board, dir, lines);
   }
 
   /** 一行向左合并：去零 + 相邻相同合并 + 补零。 */
   private collapse(line: number[]): { line: number[]; merged: boolean } {
-    const nums = line.filter((v) => v !== 0);
-    const out: number[] = [];
-    let merged = false;
-    let i = 0;
-    while (i < nums.length) {
-      if (i + 1 < nums.length && nums[i] === nums[i + 1]) {
-        out.push(nums[i]! * 2);
-        merged = true;
-        i += 2;
-      } else {
-        out.push(nums[i]!);
-        i += 1;
-      }
-    }
-    while (out.length < 4) out.push(0);
-    return { line: out, merged };
+    return collapse(line);
   }
 
   private hasMoves(): boolean {
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 4; c++) {
-        if (this.board[r]![c] === 0) return true;
-        if (c < 3 && this.board[r]![c] === this.board[r]![c + 1]) return true;
-        if (r < 3 && this.board[r]![c] === this.board[r + 1]![c]) return true;
-      }
-    }
-    return false;
+    return hasMoves(this.board);
   }
 
   private render(merged = false): void {
