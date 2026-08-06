@@ -43,7 +43,6 @@ export class ColorSortGame extends BaseGame {
   }
   protected unmount(): void {
     this.unbinds.forEach((u) => u());
-    this.unbinds.forEach((u) => u());
     this.unbinds = [];
   }
 
