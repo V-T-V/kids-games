@@ -127,6 +127,21 @@ cd D:/M_X_M/e2e-fusion && pnpm e2e project run D:/M_X_M/kids-games/e2e/e2e.proje
 
 ## 下一步（Next）
 
+### 第二轮深化（R2）完成总结（D1-D10）
+
+R2 聚焦「纯逻辑提取 + 直接测试 + bug 修复 + 成就体系加固」，共 10 轮独立提交，测试 227→331（+104，文件 19→26）：
+
+- **D1** 扫描 575 游戏未测核心逻辑清单（2048/bingo/balance/pattern/tts/util），记录于本文档指导后续。
+- **D2** 提取 2048 `engine.ts`（collapse/extract/apply/hasMoves/maxValue）+ 15 测试。
+- **D3** 提取 bingo `lines.ts`（八线/导向宾果策略）+ balance `pool.ts`（贪心拆解/子集和可解性）+ 34 测试。
+- **D4** 新增 `_shared/difficulty.ts`（byDifficulty/isMonotonic，消除 547 游戏 900+ 处三目分支）+ 8 测试。
+- **D5** 导出 CATEGORY_ACHIEVEMENT_MAP + 守护「registry 全 tag 大类都有品类成就映射」防覆盖盲区 + suggestDifficulty 边界 + 14 测试。
+- **D6** 修 color-sort unmount 重复 unbind 笔误 + 静态扫描守护防同类回归。
+- **D7** 新增里程碑 cleared-80👑/cleared-200📚（补 40→575 梯度），成就 38→40 + 5 测试。
+- **D8** tts.ts（12）+ lobby/util.ts（15）错误路径加固，共 27 测试。
+- **D9** AGENTS.md + README.md 文档同步。
+- **D10** 全量回归绿：331/331 测试 / tsc 干净 / eslint src 干净 / build 成功 / 推送。
+
 ### 第二轮深化（R2）扫描发现与处置（D1 扫描 → D2-D8 处置）
 
 基线 227 测试 / 19 文件，636 源文件。扫描发现大量游戏内纯逻辑函数零测试覆盖（575 游戏仅 4 个算法模块 maze/pathfind/colorMath/pattern 有测试）。R2 聚焦**纯逻辑提取 + 直接测试**，不引 DOM 依赖。处置结果：
