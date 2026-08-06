@@ -337,9 +337,37 @@ export function getAchievementMeta(id: string): AchievementMeta {
  * registry 里 tag 形如「认知·颜色」「数学·运算」「语言·词汇」等，
  * 取「·」前的部分作为大类。
  */
-function tagToCategory(tag: string): string {
+export function tagToCategory(tag: string): string {
   return tag.split("·")[0] ?? tag;
 }
+
+/**
+ * tag 大类 → 品类成就 id 的映射。
+ * 暴露以便单测校验：registry 里出现的每个大类前缀都应在此表中有对应成就，
+ * 否则该类游戏通关不会触发任何品类成就（覆盖盲区）。
+ */
+export const CATEGORY_ACHIEVEMENT_MAP: Readonly<Record<string, string>> = {
+  认知: "cat-cognition",
+  数学: "cat-math",
+  语言: "cat-language",
+  科学: "cat-science",
+  反应: "cat-action",
+  逻辑: "cat-action",
+  创造: "cat-action",
+  记忆: "cat-action",
+  艺术: "cat-art",
+  社交: "cat-social",
+  生活: "cat-life",
+  精细: "cat-life",
+  健康: "cat-life",
+  专注: "cat-cognition",
+  概率: "cat-action",
+  物理: "cat-science",
+  控制: "cat-action",
+  瞄准: "cat-action",
+  策略: "cat-action",
+  观察: "cat-cognition",
+};
 
 /**
  * 检查并解锁所有「累计型」成就。
@@ -434,30 +462,8 @@ export function checkMilestoneAchievements(
     const cat = tagToCategory(gameTags(id));
     catCounts[cat] = (catCounts[cat] ?? 0) + 1;
   }
-  const CAT_MAP: Record<string, string> = {
-    认知: "cat-cognition",
-    数学: "cat-math",
-    语言: "cat-language",
-    科学: "cat-science",
-    反应: "cat-action",
-    逻辑: "cat-action",
-    创造: "cat-action",
-    记忆: "cat-action",
-    艺术: "cat-art",
-    社交: "cat-social",
-    生活: "cat-life",
-    精细: "cat-life",
-    健康: "cat-life",
-    专注: "cat-cognition",
-    概率: "cat-action",
-    物理: "cat-science",
-    控制: "cat-action",
-    瞄准: "cat-action",
-    策略: "cat-action",
-    观察: "cat-cognition",
-  };
   for (const [cat, count] of Object.entries(catCounts)) {
-    const achId = CAT_MAP[cat];
+    const achId = CATEGORY_ACHIEVEMENT_MAP[cat];
     if (achId && count >= 5) tryUnlock(achId);
   }
 
