@@ -66,6 +66,20 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     category: "milestone",
   },
   {
+    id: "cleared-80",
+    name: "游戏王者",
+    icon: "👑",
+    hint: "通关 80 个不同的游戏",
+    category: "milestone",
+  },
+  {
+    id: "cleared-200",
+    name: "游戏百科",
+    icon: "📚",
+    hint: "通关 200 个不同的游戏",
+    category: "milestone",
+  },
+  {
     id: "all-clear",
     name: "全勤小达人",
     icon: "🏆",
@@ -397,6 +411,8 @@ export function checkMilestoneAchievements(
   if (clearedCount >= 10) tryUnlock("cleared-10");
   if (clearedCount >= 20) tryUnlock("cleared-20");
   if (clearedCount >= 40) tryUnlock("cleared-40");
+  if (clearedCount >= 80) tryUnlock("cleared-80");
+  if (clearedCount >= 200) tryUnlock("cleared-200");
   if (clearedCount >= ALL_GAME_IDS.length) tryUnlock("all-clear");
 
   // 3 星数

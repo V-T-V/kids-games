@@ -8,13 +8,38 @@ import {
   CATEGORY_ACHIEVEMENT_MAP,
   tagToCategory,
   getAchievementMeta,
+  checkMilestoneAchievements,
 } from "../src/core/achievements.ts";
 import { GAMES } from "../src/games/registry.ts";
 import { suggestDifficulty } from "../src/core/adaptive.ts";
+import {
+  createEmptySave,
+  recordResult,
+  ALL_GAME_IDS,
+} from "../src/core/storage.ts";
 import type { Difficulty, GameResult } from "../src/types.ts";
 
 function result(d: Difficulty, cleared: boolean, stars: number): GameResult {
   return { gameId: "memory-flip", cleared, stars, difficulty: d, durationMs: 1 };
+}
+
+/** 提供简单 tag 映射（与 achievements.test.ts 同款，认知类兜底）。 */
+const tagOf = (id: string): string => "认知·其他";
+
+/** 批量通关若干不同游戏。 */
+function clearGames(
+  save: ReturnType<typeof createEmptySave>,
+  ids: string[],
+  opts: { stars?: number; difficulty?: "easy" | "medium" | "hard" } = {},
+): void {
+  for (const id of ids) {
+    recordResult(save, {
+      gameId: id as never,
+      cleared: true,
+      stars: opts.stars ?? 1,
+      difficulty: (opts.difficulty ?? "easy") as never,
+    });
+  }
 }
 
 test("tagToCategory: 取「·」前的大类", () => {
@@ -122,3 +147,66 @@ test("suggestDifficulty: 空 recent 数组保持当前", () => {
     assert.equal(suggestDifficulty(d, []), d);
   }
 });
+
+// ---------- 里程碑梯度细化（D7：40→575 之间补 80/200 两档） ----------
+
+test("里程碑成就梯度: 1/5/10/20/40/80/200/all 全部存在", () => {
+  const ids = new Set(ACHIEVEMENTS.map((a) => a.id));
+  for (const id of [
+    "first-clear",
+    "cleared-5",
+    "cleared-10",
+    "cleared-20",
+    "cleared-40",
+    "cleared-80",
+    "cleared-200",
+    "all-clear",
+  ]) {
+    assert.ok(ids.has(id as never), `缺里程碑成就 ${id}`);
+  }
+});
+
+test("里程碑成就梯度: 通关 80 个解锁 cleared-80（40 不够）", () => {
+  const save40 = createEmptySave();
+  clearGames(save40, ALL_SAMPLE_80().slice(0, 40), { stars: 1 });
+  const r40 = checkMilestoneAchievements(save40, tagOf);
+  assert.ok(r40.includes("cleared-40"));
+  assert.ok(!r40.includes("cleared-80"), "40 个不应解锁 cleared-80");
+
+  const save80 = createEmptySave();
+  clearGames(save80, ALL_SAMPLE_80().slice(0, 80), { stars: 1 });
+  const r80 = checkMilestoneAchievements(save80, tagOf);
+  assert.ok(r80.includes("cleared-80"), "80 个应解锁 cleared-80");
+});
+
+test("里程碑成就梯度: 通关 200 个解锁 cleared-200", () => {
+  const save = createEmptySave();
+  clearGames(save, ALL_SAMPLE_80().slice(0, 200), { stars: 1 });
+  const r = checkMilestoneAchievements(save, tagOf);
+  assert.ok(r.includes("cleared-200"), "200 个应解锁 cleared-200");
+  assert.ok(r.includes("cleared-80"));
+});
+
+test("里程碑成就梯度单调：低档解锁时高档可能未解锁（不跳档）", () => {
+  const save = createEmptySave();
+  clearGames(save, ALL_SAMPLE_80().slice(0, 50), { stars: 1 });
+  const r = checkMilestoneAchievements(save, tagOf);
+  assert.ok(r.includes("cleared-40"));
+  assert.ok(!r.includes("cleared-80"));
+  assert.ok(!r.includes("cleared-200"));
+});
+
+test("里程碑成就: cleared-80/200 category=milestone 且元数据完整", () => {
+  for (const id of ["cleared-80", "cleared-200"]) {
+    const m = getAchievementMeta(id);
+    assert.equal(m.category, "milestone");
+    assert.ok(m.name.length > 0, `${id} 缺 name`);
+    assert.ok(m.icon.length > 0, `${id} 缺 icon`);
+    assert.ok(m.hint.length > 0, `${id} 缺 hint`);
+  }
+});
+
+// 取至少 200 个真实 game id（registry 有 575，足够）
+function ALL_SAMPLE_80(): string[] {
+  return ALL_GAME_IDS.slice(0, 200).map((id) => id as string);
+}
