@@ -118,6 +118,19 @@ cd D:/M_X_M/e2e-fusion && pnpm e2e project run D:/M_X_M/kids-games/e2e/e2e.proje
 
 ## 下一步（Next）
 
+### 第二轮深化（R2）扫描发现：未测核心逻辑清单（D1）
+
+基线 227 测试 / 19 文件，636 源文件。扫描发现大量游戏内纯逻辑函数零测试覆盖（575 游戏仅 4 个算法模块 maze/pathfind/colorMath/pattern 有测试）。R2 聚焦**纯逻辑提取 + 直接测试**，不引 DOM 依赖：
+
+- **未测核心模块**：`core/tts.ts`（语音开关/朗读，localStorage 派生，纯逻辑可测）、`lobby/util.ts`（`shuffle`/`sample`/`randInt`/`debounce`/`getCssVar` 随机性与回退，零测试）。
+- **游戏内未测纯逻辑**（按可提取性排序）：
+  - `2048`：`collapse`（行合并去零+相邻合并+补零）、`extract`/`apply`（四方向线提取/回填）、`hasMoves`（无解判定）。经典 2048 核心算法，0 测试。
+  - `bingo-card`：`LINES` 八条连线 + `nextCall` 目标线选择策略（选点亮最多的线导向宾果）。
+  - `balance-scale`：`buildPool`（候选砝码池构造，保证可解 + 干扰项数量随难度）。
+  - `pattern-design`：`makePuzzle`（重复单元 + 不相邻空缺 + 唯一答案）的不变量（长度/相邻性/答案唯一）。
+  - `resolve-fight`：冲突解谜判定。
+- **engine.ts**：`onWrong` 宽限期/休息护盾、`finishClear` 幂等锁、`trackTimeout` evenIfFinished 语义——DOM/audio 强耦合，本轮用纯逻辑提取 + 接口快照方式间接覆盖，不强制 mock。
+
 - **内容深化**：575 个游戏已有，可继续打磨个别游戏的视觉/音效细节与教育内核文案。
 - **家长报告增强**：加入周/月趋势曲线、能力雷达图、导出 PDF 报告。
 - **i18n**：当前中文优先，可加英文/双语切换（UI 文案集中度已较高）。
