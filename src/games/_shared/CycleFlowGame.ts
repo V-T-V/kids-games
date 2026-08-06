@@ -10,6 +10,7 @@ import { BaseGame } from "../../core/engine.ts";
 import { starsByAccuracy } from "../../core/scoring.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
+import { byDifficulty } from "./difficulty.ts";
 import type { GameId } from "../../types.ts";
 
 export interface FlowStage {
@@ -47,12 +48,7 @@ export abstract class CycleFlowGame extends BaseGame {
   private display: number[] = [];
 
   protected mount(): void {
-    this.roundTotal =
-      this.difficulty === "easy"
-        ? this.cfg.roundTotal.easy
-        : this.difficulty === "medium"
-          ? this.cfg.roundTotal.medium
-          : this.cfg.roundTotal.hard;
+    this.roundTotal = byDifficulty(this.difficulty, this.cfg.roundTotal);
     this.injectStyle();
     this.startRound();
   }
@@ -61,11 +57,7 @@ export abstract class CycleFlowGame extends BaseGame {
   }
 
   private maxLenN(): number {
-    return this.difficulty === "easy"
-      ? this.cfg.maxLen.easy
-      : this.difficulty === "medium"
-        ? this.cfg.maxLen.medium
-        : this.cfg.maxLen.hard;
+    return byDifficulty(this.difficulty, this.cfg.maxLen);
   }
 
   private startRound(): void {

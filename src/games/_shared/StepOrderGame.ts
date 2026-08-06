@@ -17,6 +17,7 @@ import { starsByAccuracy } from "../../core/scoring.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, sample, shuffle } from "../../lobby/util.ts";
+import { byDifficulty } from "./difficulty.ts";
 import type { GameId } from "../../types.ts";
 
 /** 一张步骤卡。 */
@@ -64,13 +65,7 @@ export abstract class StepOrderGame extends BaseGame {
   private curGroup: StepItem[] = [];
 
   protected mount(): void {
-    const r =
-      this.difficulty === "easy"
-        ? this.cfg.roundTotal.easy
-        : this.difficulty === "medium"
-          ? this.cfg.roundTotal.medium
-          : this.cfg.roundTotal.hard;
-    this.roundTotal = r;
+    this.roundTotal = byDifficulty(this.difficulty, this.cfg.roundTotal);
     this.injectStyle();
     this.startRound();
   }
@@ -79,11 +74,7 @@ export abstract class StepOrderGame extends BaseGame {
   }
 
   private stepCountN(): number {
-    return this.difficulty === "easy"
-      ? this.cfg.stepCount.easy
-      : this.difficulty === "medium"
-        ? this.cfg.stepCount.medium
-        : this.cfg.stepCount.hard;
+    return byDifficulty(this.difficulty, this.cfg.stepCount);
   }
 
   private startRound(): void {
