@@ -5,6 +5,12 @@
 import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar } from "../../lobby/util.ts";
+import {
+  isSolved as isSolvedGrid,
+  moveTile,
+  shuffleStep as shuffleStepGrid,
+  solvedBoard,
+} from "./engine.ts";
 
 export class SlidingPuzzleGame extends BaseGame {
   constructor() {
@@ -31,9 +37,8 @@ export class SlidingPuzzleGame extends BaseGame {
   private startRound(): void {
     this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
-    const total = this.n * this.n;
     // 初始为已排好，然后用合法移动打乱（保证可解）
-    this.tiles = Array.from({ length: total }, (_, i) => (i + 1) % total); // 最后一个是 0(空)
+    this.tiles = solvedBoard(this.n);
     // 打乱步数按难度分级：easy 少打乱（孩子能解），hard 充分打乱
     const shuffleSteps =
       this.difficulty === "easy" ? 12 : this.difficulty === "medium" ? 40 : 120;
@@ -44,24 +49,9 @@ export class SlidingPuzzleGame extends BaseGame {
 
   private shuffleStep(): void {
     const blank = this.tiles.indexOf(0);
-    const bx = blank % this.n,
-      by = Math.floor(blank / this.n);
-    const neigh: number[] = [];
-    const offsets: [number, number][] = [
-      [bx - 1, by],
-      [bx + 1, by],
-      [bx, by - 1],
-      [bx, by + 1],
-    ];
-    for (const [x, y] of offsets) {
-      if (x >= 0 && x < this.n && y >= 0 && y < this.n)
-        neigh.push(y * this.n + x);
-    }
-    const pick = neigh[Math.floor(Math.random() * neigh.length)]!;
-    [this.tiles[blank], this.tiles[pick]] = [
-      this.tiles[pick]!,
-      this.tiles[blank]!,
-    ];
+    const { tiles, blank: nb } = shuffleStepGrid(this.tiles, blank, this.n);
+    this.tiles = tiles;
+    void nb;
   }
 
   private render(): void {
@@ -104,18 +94,13 @@ export class SlidingPuzzleGame extends BaseGame {
       by = Math.floor(blank / this.n);
     // 必须相邻
     if (Math.abs(ax - bx) + Math.abs(ay - by) !== 1) return;
-    [this.tiles[idx], this.tiles[blank]] = [
-      this.tiles[blank]!,
-      this.tiles[idx]!,
-    ];
+    this.tiles = moveTile(this.tiles, idx, this.n);
     this.moves += 1;
     sfxPop();
     this.resetWrongStreak();
     this.render();
-    // 检查完成：前 n*n-1 个是 1,2,3...
-    const done =
-      this.tiles.slice(0, -1).every((v, i) => v === i + 1) &&
-      this.tiles[this.tiles.length - 1] === 0;
+    // 检查完成
+    const done = isSolvedGrid(this.tiles, this.n);
     if (done) {
       const stars =
         this.moves <= this.n * this.n * 6
