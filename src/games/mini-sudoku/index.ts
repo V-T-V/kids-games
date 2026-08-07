@@ -5,6 +5,12 @@
 import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
+import {
+  digBlanks,
+  findConflicts as findConflictsGrid,
+  generateSolution,
+  isComplete as isCompleteGrid,
+} from "./engine.ts";
 
 export class MiniSudokuGame extends BaseGame {
   constructor() {
@@ -36,13 +42,7 @@ export class MiniSudokuGame extends BaseGame {
     const EMOJI = ["🍎", "🍌", "🍇", "🍓"];
     this.syms = EMOJI.slice(0, this.n);
     // 生成一个合法解：每行是基础排列的循环移位
-    const base = this.syms;
-    this.solution = [];
-    for (let y = 0; y < this.n; y++) {
-      for (let x = 0; x < this.n; x++) {
-        this.solution.push(base[(x + y) % this.n]!);
-      }
-    }
+    this.solution = generateSolution(this.syms, this.n);
     // 挖空：easy 留更多提示
     const blanks =
       this.difficulty === "easy"
@@ -50,7 +50,7 @@ export class MiniSudokuGame extends BaseGame {
         : Math.floor(this.n * this.n * 0.6);
     const idxList = shuffle(this.solution.map((_, i) => i));
     const blankSet = new Set(idxList.slice(0, blanks));
-    this.board = this.solution.map((s, i) => (blankSet.has(i) ? null : s));
+    this.board = digBlanks(this.solution, blankSet);
 
     const wrap = document.createElement("div");
     wrap.className = "ms-wrap";
@@ -104,41 +104,13 @@ export class MiniSudokuGame extends BaseGame {
   private validate(): void {
     // 清除冲突标记
     this.cells.forEach((c) => c.classList.remove("ms-cell--conflict"));
-    let conflict = false;
-    // 检查行/列
-    for (let y = 0; y < this.n; y++) {
-      const seen: Record<string, number[]> = {};
-      for (let x = 0; x < this.n; x++) {
-        const i = y * this.n + x;
-        const v = this.board[i];
-        if (!v) continue;
-        (seen[v] ??= []).push(i);
-      }
-      Object.values(seen).forEach((arr) => {
-        if (arr.length > 1) {
-          conflict = true;
-          arr.forEach((k) => this.cells[k]!.classList.add("ms-cell--conflict"));
-        }
-      });
-    }
-    for (let x = 0; x < this.n; x++) {
-      const seen: Record<string, number[]> = {};
-      for (let y = 0; y < this.n; y++) {
-        const i = y * this.n + x;
-        const v = this.board[i];
-        if (!v) continue;
-        (seen[v] ??= []).push(i);
-      }
-      Object.values(seen).forEach((arr) => {
-        if (arr.length > 1) {
-          conflict = true;
-          arr.forEach((k) => this.cells[k]!.classList.add("ms-cell--conflict"));
-        }
-      });
-    }
+    // 行列冲突索引
+    const conflictIdx = findConflictsGrid(this.board, this.n);
+    conflictIdx.forEach((k) =>
+      this.cells[k]!.classList.add("ms-cell--conflict"),
+    );
     // 全填满且无冲突 = 完成
-    const filled = this.board.every((v) => v !== null);
-    if (filled && !conflict) {
+    if (isCompleteGrid(this.board, this.n)) {
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
       this.resetWrongStreak();
       this.trackTimeout(() => {
