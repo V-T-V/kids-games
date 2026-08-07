@@ -10,6 +10,14 @@ import { starsByAccuracy } from "../../core/scoring.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, randInt } from "../../lobby/util.ts";
+import {
+  applyGravity as applyGravityGrid,
+  clearMatches as clearMatchesGrid,
+  findMatches as findMatchesGrid,
+  hasMove as hasMoveGrid,
+  isAdjacent as isAdjacentGrid,
+  swap as swapGrid,
+} from "./engine.ts";
 
 /** 宝石：用 emoji 渲染，颜色 id 0..5。 */
 const GEM_EMOJI = ["💎", "🔵", "🟢", "🟡", "🔴", "🟣"];
@@ -17,14 +25,6 @@ const GEM_COUNT = 6;
 
 /** 单元格结构：null = 空格（消除后下落前）。 */
 type Gem = number | null;
-
-/** 方向向量。 */
-const ADJ: ReadonlyArray<[number, number]> = [
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-  [0, -1],
-];
 
 export class MatchThreeGame extends BaseGame {
   constructor() {
@@ -181,7 +181,7 @@ export class MatchThreeGame extends BaseGame {
     x2: number,
     y2: number,
   ): boolean {
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2) === 1;
+    return isAdjacentGrid(x1, y1, x2, y2);
   }
 
   private markSelected(): void {
@@ -274,47 +274,12 @@ export class MatchThreeGame extends BaseGame {
   }
 
   private swap(x1: number, y1: number, x2: number, y2: number): void {
-    const t = this.grid[y1]![x1]!;
-    this.grid[y1]![x1] = this.grid[y2]![x2]!;
-    this.grid[y2]![x2] = t;
+    this.grid = swapGrid(this.grid, x1, y1, x2, y2);
   }
 
   /** 找出所有属于三连（行或列）的格子坐标集合（"x,y"）。 */
   private findMatches(): Set<string> {
-    const m = new Set<string>();
-    // 行
-    for (let y = 0; y < this.n; y++) {
-      let run = 1;
-      for (let x = 1; x <= this.n; x++) {
-        const cur = x < this.n ? this.grid[y]![x] : null;
-        const prev = this.grid[y]![x - 1]!;
-        if (cur != null && cur === prev) {
-          run += 1;
-        } else {
-          if (run >= 3) {
-            for (let k = x - run; k < x; k++) m.add(`${k},${y}`);
-          }
-          run = 1;
-        }
-      }
-    }
-    // 列
-    for (let x = 0; x < this.n; x++) {
-      let run = 1;
-      for (let y = 1; y <= this.n; y++) {
-        const cur = y < this.n ? this.grid[y]![x] : null;
-        const prev = this.grid[y - 1]![x]!;
-        if (cur != null && cur === prev) {
-          run += 1;
-        } else {
-          if (run >= 3) {
-            for (let k = y - run; k < y; k++) m.add(`${x},${k}`);
-          }
-          run = 1;
-        }
-      }
-    }
-    return m;
+    return findMatchesGrid(this.grid, this.n) as Set<string>;
   }
 
   private highlightMatches(m: Set<string>): void {
@@ -328,29 +293,14 @@ export class MatchThreeGame extends BaseGame {
   }
 
   private clearMatches(m: Set<string>): void {
-    for (const key of m) {
-      const [x, y] = key.split(",").map(Number);
-      if (x == null || y == null) continue;
-      this.grid[y]![x] = null;
-    }
+    this.grid = clearMatchesGrid(this.grid, m as Set<`${number},${number}`>);
   }
 
   /** 重力下落 + 顶部补充。 */
   private applyGravity(): void {
-    for (let x = 0; x < this.n; x++) {
-      // 收集本列非空，自底向上
-      const col: Gem[] = [];
-      for (let y = this.n - 1; y >= 0; y--) {
-        const g = this.grid[y]![x]!;
-        if (g != null) col.push(g);
-      }
-      // 顶部补足新宝石
-      while (col.length < this.n) col.push(randInt(0, GEM_COUNT - 1));
-      // 写回（col 已是从底到顶）
-      for (let y = this.n - 1, i = 0; y >= 0; y--, i++) {
-        this.grid[y]![x] = col[i]!;
-      }
-    }
+    this.grid = applyGravityGrid(this.grid, this.n, () =>
+      randInt(0, GEM_COUNT - 1),
+    );
   }
 
   private redraw(): void {
@@ -374,20 +324,7 @@ export class MatchThreeGame extends BaseGame {
 
   /** 是否存在至少一个能产生消除的相邻交换。 */
   private hasMove(): boolean {
-    for (let y = 0; y < this.n; y++) {
-      for (let x = 0; x < this.n; x++) {
-        for (const [dx, dy] of ADJ) {
-          const nx = x + dx;
-          const ny = y + dy;
-          if (nx < 0 || ny < 0 || nx >= this.n || ny >= this.n) continue;
-          this.swap(x, y, nx, ny);
-          const ok = this.findMatches().size > 0;
-          this.swap(x, y, nx, ny);
-          if (ok) return true;
-        }
-      }
-    }
-    return false;
+    return hasMoveGrid(this.grid, this.n);
   }
 
   private delay(ms: number): Promise<void> {
