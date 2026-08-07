@@ -156,6 +156,19 @@ R2 聚焦「纯逻辑提取 + 直接测试 + bug 修复 + 成就体系加固」�
 - ✅ **Bug 修复**（D6）：color-sort unmount 重复 unbinds.forEach 笔误 + game-contract 静态扫描守护防同类回归。
 - ⏸ **待后续**：`pattern-design` makePuzzle 不变量、`resolve-fight` 判定、engine.ts DOM 耦合分支（onWrong 宽限期/finishClear 幂等锁）需 DOM mock，留待后续轮次。
 
+### 第七轮深化（R7）扫描清单（D1 基线 331/331 绿，647 源文件）
+
+基线 331 测试 / 26 文件全绿。继续「纯逻辑提取 + 直接测试」路线，扫描出更多游戏内**与 DOM 解耦的核心算法函数**零测试覆盖：
+
+- ⏳ **`match-three`**：纯函数丰富——`findMatches()`（行/列三连扫描）、`applyGravity()`（列内重力下落+顶部补）、`hasMove()`（存在可消除交换）、`isAdjacent()`（曼哈顿距离=1）。完全无 DOM，最值得提取为 `engine.ts`。
+- ⏳ **`sliding-puzzle`**：纯函数 `isSolved()`（前 n*n-1 升序+末位空）、`isAdjacent()`（曼哈顿=1）、`neighbors(blank)`（空格四邻）。shuffleStep 用合法移动保证可解。
+- ⏳ **`pattern-design`**：`makePuzzle(blanks)`——重复单元 + 空缺位置不相邻保证答案唯一 + 干扰项来自未用形状。不变量可测（单元长度/空缺不相邻/答案集合一致）。
+- ⏳ **`mini-sudoku` / `color-sudoku` / `sudoku-shape`**：数独类——候选 validity / 行列宫唯一性 / 求解器。
+- ⏳ **`pipe-connect` / `path-connect` / `link-match`**：连线类——pathfind 已测，但这些游戏各自的连通性判定未测。
+- ⏳ **`number-bond` / `number-cross` / `number-sequence`**：数学类——题目生成器不变量。
+
+R7-D2 起，逐个提取为纯逻辑模块 + 补测试。每轮先跑 `npm test` 确保基线绿。
+
 - **内容深化**：575 个游戏已有，可继续打磨个别游戏的视觉/音效细节与教育内核文案。
 - **家长报告增强**：加入周/月趋势曲线、能力雷达图、导出 PDF 报告。
 - **i18n**：当前中文优先，可加英文/双语切换（UI 文案集中度已较高）。
