@@ -210,3 +210,124 @@ test("里程碑成就: cleared-80/200 category=milestone 且元数据完整", ()
 function ALL_SAMPLE_80(): string[] {
   return ALL_GAME_IDS.slice(0, 200).map((id) => id as string);
 }
+
+// ---------- 成就梯度细化（R7-D7：补满星/困难/习惯三档升级） ----------
+
+test("满星梯度: 三个档位 three-star-5/15/30 全部存在", () => {
+  const ids = new Set(ACHIEVEMENTS.map((a) => a.id));
+  for (const id of ["three-star-5", "three-star-15", "three-star-30"]) {
+    assert.ok(ids.has(id as never), `缺满星成就 ${id}`);
+  }
+});
+
+test("满星梯度: 30 个 3 星游戏解锁 three-star-30（15 个不解锁）", () => {
+  const save15 = createEmptySave();
+  clearGames(save15, ALL_SAMPLE_80().slice(0, 15), { stars: 3 });
+  const r15 = checkMilestoneAchievements(save15, tagOf);
+  assert.ok(r15.includes("three-star-15"));
+  assert.ok(!r15.includes("three-star-30"), "15 个不应解锁 three-star-30");
+
+  const save30 = createEmptySave();
+  clearGames(save30, ALL_SAMPLE_80().slice(0, 30), { stars: 3 });
+  const r30 = checkMilestoneAchievements(save30, tagOf);
+  assert.ok(r30.includes("three-star-30"), "30 个应解锁 three-star-30");
+});
+
+test("满星梯度单调: 20 个 3 星解锁 15 档但不解锁 30 档", () => {
+  const save = createEmptySave();
+  clearGames(save, ALL_SAMPLE_80().slice(0, 20), { stars: 3 });
+  const r = checkMilestoneAchievements(save, tagOf);
+  assert.ok(r.includes("three-star-15"));
+  assert.ok(!r.includes("three-star-30"));
+});
+
+test("困难梯度: 三档 hard-clearer/hard-master/hard-master-25 全部存在", () => {
+  const ids = new Set(ACHIEVEMENTS.map((a) => a.id));
+  for (const id of ["hard-clearer", "hard-master", "hard-master-25"]) {
+    assert.ok(ids.has(id as never), `缺困难成就 ${id}`);
+  }
+});
+
+test("困难梯度: 25 个困难通关解锁 hard-master-25（10 个不解锁）", () => {
+  const save10 = createEmptySave();
+  clearGames(save10, ALL_SAMPLE_80().slice(0, 10), {
+    stars: 1,
+    difficulty: "hard",
+  });
+  const r10 = checkMilestoneAchievements(save10, tagOf);
+  assert.ok(r10.includes("hard-master"));
+  assert.ok(!r10.includes("hard-master-25"), "10 个不应解锁 hard-master-25");
+
+  const save25 = createEmptySave();
+  clearGames(save25, ALL_SAMPLE_80().slice(0, 25), {
+    stars: 1,
+    difficulty: "hard",
+  });
+  const r25 = checkMilestoneAchievements(save25, tagOf);
+  assert.ok(r25.includes("hard-master-25"), "25 个应解锁 hard-master-25");
+});
+
+test("持之以恒 dedicated: 10 个不同游戏各玩满 3 次解锁（9 个不解锁）", () => {
+  // 9 个游戏各玩 3 次
+  const save9 = createEmptySave();
+  for (const id of ALL_SAMPLE_80().slice(0, 9)) {
+    for (let i = 0; i < 3; i++) {
+      recordResult(save9, {
+        gameId: id as never,
+        cleared: false,
+        stars: 0,
+        difficulty: "easy" as never,
+      });
+    }
+  }
+  const r9 = checkMilestoneAchievements(save9, tagOf);
+  assert.ok(!r9.includes("dedicated"), "9 个游戏不应解锁 dedicated");
+
+  // 10 个游戏各玩 3 次
+  const save10 = createEmptySave();
+  for (const id of ALL_SAMPLE_80().slice(0, 10)) {
+    for (let i = 0; i < 3; i++) {
+      recordResult(save10, {
+        gameId: id as never,
+        cleared: false,
+        stars: 0,
+        difficulty: "easy" as never,
+      });
+    }
+  }
+  const r10 = checkMilestoneAchievements(save10, tagOf);
+  assert.ok(r10.includes("dedicated"), "10 个游戏各 3 次应解锁 dedicated");
+});
+
+test("dedicated: 同一游戏玩 30 次不解锁（必须是不同游戏）", () => {
+  const save = createEmptySave();
+  for (let i = 0; i < 30; i++) {
+    recordResult(save, {
+      gameId: ALL_SAMPLE_80()[0]! as never,
+      cleared: false,
+      stars: 0,
+      difficulty: "easy" as never,
+    });
+  }
+  const r = checkMilestoneAchievements(save, tagOf);
+  assert.ok(!r.includes("dedicated"), "单一游戏多次不应解锁 dedicated");
+});
+
+test("新成就元数据: three-star-30/hard-master-25/dedicated 完整且分类正确", () => {
+  const m30 = getAchievementMeta("three-star-30");
+  assert.equal(m30.category, "skill");
+  assert.ok(m30.name.length > 0 && m30.icon.length > 0 && m30.hint.length > 0);
+
+  const m25 = getAchievementMeta("hard-master-25");
+  assert.equal(m25.category, "skill");
+  assert.ok(m25.name.length > 0 && m25.icon.length > 0 && m25.hint.length > 0);
+
+  const mDed = getAchievementMeta("dedicated");
+  assert.equal(mDed.category, "hidden");
+  assert.equal(mDed.hidden, true);
+  assert.ok(mDed.name.length > 0 && mDed.icon.length > 0 && mDed.hint.length > 0);
+});
+
+test("成就总数: 新增 3 个后恰为 43（40→43）", () => {
+  assert.equal(ACHIEVEMENTS.length, 43);
+});

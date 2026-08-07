@@ -189,6 +189,13 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     category: "skill",
   },
   {
+    id: "three-star-30",
+    name: "满星宗师",
+    icon: "💎",
+    hint: "在 30 个游戏里都拿到 3 星",
+    category: "skill",
+  },
+  {
     id: "hard-clearer",
     name: "挑战自我",
     icon: "🔥",
@@ -200,6 +207,13 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     name: "困难征服者",
     icon: "💪",
     hint: "在困难难度下通关 10 个游戏",
+    category: "skill",
+  },
+  {
+    id: "hard-master-25",
+    name: "困难终结者",
+    icon: "🛡️",
+    hint: "在困难难度下通关 25 个游戏",
     category: "skill",
   },
   {
@@ -280,6 +294,14 @@ export const ACHIEVEMENTS: readonly AchievementMeta[] = [
     name: "百战不殆",
     icon: "💯",
     hint: "累计游玩 100 局",
+    category: "hidden",
+    hidden: true,
+  },
+  {
+    id: "dedicated",
+    name: "持之以恒",
+    icon: "🔥",
+    hint: "在 10 个不同的游戏里每个都玩满 3 次",
     category: "hidden",
     hidden: true,
   },
@@ -421,6 +443,7 @@ export function checkMilestoneAchievements(
   ).length;
   if (threeStarCount >= 5) tryUnlock("three-star-5");
   if (threeStarCount >= 15) tryUnlock("three-star-15");
+  if (threeStarCount >= 30) tryUnlock("three-star-30");
 
   // 困难通关数
   const hardCount = ALL_GAME_IDS.filter(
@@ -428,6 +451,7 @@ export function checkMilestoneAchievements(
   ).length;
   if (hardCount >= 1) tryUnlock("hard-clearer");
   if (hardCount >= 10) tryUnlock("hard-master");
+  if (hardCount >= 25) tryUnlock("hard-master-25");
 
   // 累计星星
   const totalStars = ALL_GAME_IDS.reduce(
@@ -453,6 +477,12 @@ export function checkMilestoneAchievements(
   if (ALL_GAME_IDS.some((id) => save.progress[id].playCount >= 5)) {
     tryUnlock("persistent");
   }
+
+  // 持之以恒：在 10 个不同游戏里每个都玩满 3 次（习惯养成）
+  const dedicatedCount = ALL_GAME_IDS.filter(
+    (id) => save.progress[id].playCount >= 3,
+  ).length;
+  if (dedicatedCount >= 10) tryUnlock("dedicated");
 
   // 学习路径成就：每条路径全通关解锁对应成就；5 条全通关解锁 path-all
   const PATH_ACH: Record<string, string> = {
