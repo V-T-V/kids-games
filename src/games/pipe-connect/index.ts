@@ -14,6 +14,7 @@ export class PipeConnectGame extends BaseGame {
   private roundTotal = 0;
   private rotations: number[] = [];
   private pipes: HTMLDivElement[] = [];
+  private locked = false;
 
   protected mount(): void {
     this.roundTotal =
@@ -30,6 +31,7 @@ export class PipeConnectGame extends BaseGame {
   }
 
   private startRound(): void {
+    this.locked = false;
     this.root.innerHTML = "";
     this.reportProgress(this.roundsDone, this.roundTotal);
     const n = this.len();
@@ -70,6 +72,7 @@ export class PipeConnectGame extends BaseGame {
   }
 
   private rotate(i: number): void {
+    if (this.locked) return;
     this.rotations[i] = (this.rotations[i]! + 90) % 360;
     sfxPop();
     this.updatePipe(this.pipes[i]!, i);
@@ -77,6 +80,7 @@ export class PipeConnectGame extends BaseGame {
     // 全部水平（0 或 180）即连通
     const ok = this.rotations.every((r) => r === 0 || r === 180);
     if (ok) {
+      this.locked = true; // 锁定本轮，防 1200ms 水流动画期间重复计入 roundsDone
       this.pipes.forEach((p) => p.classList.add("pc-pipe--flow"));
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
       this.roundsDone += 1;

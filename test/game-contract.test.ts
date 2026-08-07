@@ -109,3 +109,33 @@ test("游戏契约: unmount 不重复调用同一解绑语句（防 color-sort �
     `以下游戏的 unmount 存在重复解绑语句（笔误）：\n${bad.join("\n")}`,
   );
 });
+
+test("游戏契约: pipe-connect 修复回归——rotate 结算期间锁定防 roundsDone 重复累加", () => {
+  // 曾有 bug：pipe-connect 的 rotate() 在全部管道连通后进入 1200ms 水流动画
+  // （trackTimeout 回调里才 finishClear/startRound），但动画期间玩家可继续点击管道，
+  // 若无 locked 守卫，连通状态被再次满足 → roundsDone 被重复累加 → 一轮可计多次。
+  // 守护：pipe-connect 必须有 locked 字段 + rotate() 入口守卫 + 进入结算前置 true。
+  const pipe = listGames().find((g) => g.dir === "pipe-connect");
+  assert.ok(pipe, "pipe-connect 游戏应存在");
+  const src = pipe!.src;
+  assert.match(
+    src,
+    /private\s+locked\s*[:=]/,
+    "pipe-connect 必须声明 locked 字段",
+  );
+  assert.match(
+    src,
+    /rotate\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*this\.locked\s*\)\s*return/,
+    "pipe-connect.rotate() 必须在入口检查 this.locked 早返回",
+  );
+  assert.match(
+    src,
+    /this\.locked\s*=\s*true/,
+    "pipe-connect 进入结算动画前必须置 this.locked = true",
+  );
+  assert.match(
+    src,
+    /this\.locked\s*=\s*false/,
+    "pipe-connect.startRound() 必须重置 this.locked = false 以开新一轮",
+  );
+});
