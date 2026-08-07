@@ -7,50 +7,8 @@ import { sfxPop } from "../../core/audio.ts";
 import { starsByAccuracy } from "../../core/scoring.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
-import { getCssVar, shuffle } from "../../lobby/util.ts";
-
-interface Puzzle {
-  /** 完整序列（包括空缺处的正确答案） */
-  full: string[];
-  /** 哪几个位置是空缺（索引） */
-  blanks: number[];
-  /** 候选答案池（含正确） */
-  pool: string[];
-}
-
-const SHAPES = ["🔴", "🟡", "🔵", "🟢", "🟣", "🟠", "⭐", "🔺", "🟦", "🔶"];
-
-/** 构造一个可解规律谜题：基础重复单元 + 缺口。 */
-function makePuzzle(blanks: number): Puzzle {
-  // 重复单元长度 2 或 3
-  const unitLen = Math.random() < 0.5 ? 2 : 3;
-  const unitShapes = shuffle(SHAPES).slice(0, unitLen);
-  // 总长度 6 或 8
-  const total = unitLen === 2 ? 6 : unitLen === 3 ? 9 : 6;
-  const full: string[] = [];
-  for (let i = 0; i < total; i++) {
-    full.push(unitShapes[i % unitLen]!);
-  }
-  // 选空缺位置（避开彼此太近导致歧义，且保证答案唯一）
-  const blankIdx: number[] = [];
-  const positions = shuffle(full.map((_, i) => i)).filter(
-    (i) => i > 0 && i < total - 1,
-  );
-  for (const p of positions) {
-    if (blankIdx.length >= blanks) break;
-    // 避免相邻空缺
-    if (blankIdx.some((b) => Math.abs(b - p) <= 1)) continue;
-    blankIdx.push(p);
-  }
-  blankIdx.sort((a, b) => a - b);
-  // 干扰选项：用未在单元里的形状
-  const used = new Set(unitShapes);
-  const distract = SHAPES.filter((s) => !used.has(s)).slice(0, blanks + 1);
-  // 正确答案集合（去重）
-  const correct = blankIdx.map((i) => full[i]!);
-  const pool = shuffle([...correct, ...distract]);
-  return { full, blanks: blankIdx, pool };
-}
+import { getCssVar } from "../../lobby/util.ts";
+import { makePuzzle, type Puzzle } from "./engine.ts";
 
 export class PatternDesignGame extends BaseGame {
   constructor() {
