@@ -18,19 +18,25 @@ const queue: ToastEntry[] = [];
 let activeTimer: number | null = null;
 let container: HTMLElement | null = null;
 
-/** 懒加载 toast 容器（首次使用时创建）。 */
-function ensureContainer(): HTMLElement {
-  if (container && document.body.contains(container)) return container;
-  const el = document.createElement("div");
-  el.id = "toast-layer";
-  el.style.cssText =
-    "position:fixed;top:16px;right:16px;z-index:9999;pointer-events:none;display:flex;flex-direction:column;gap:8px;";
-  document.body.appendChild(el);
-  container = el;
-  return el;
+/** 懒加载 toast 容器（首次使用时创建）。无 DOM 环境返回 null（永不抛错）。 */
+function ensureContainer(): HTMLElement | null {
+  try {
+    if (typeof document === "undefined") return null;
+    if (container && document.body.contains(container)) return container;
+    const el = document.createElement("div");
+    el.id = "toast-layer";
+    el.style.cssText =
+      "position:fixed;top:16px;right:16px;z-index:9999;pointer-events:none;display:flex;flex-direction:column;gap:8px;";
+    document.body.appendChild(el);
+    container = el;
+    return el;
+  } catch {
+    // 无 DOM（SSR/Node 测试环境）或 body 不可用：静默降级，不阻塞调用方
+    return null;
+  }
 }
 
-/** 弹出一条成就解锁提示。 */
+/** 弹出一条成就解锁提示。无 DOM 环境静默跳过（永不抛错）。 */
 export function showAchievement(
   icon: string,
   title: string,
@@ -40,14 +46,25 @@ export function showAchievement(
   if (activeTimer === null) showNext();
 }
 
-/** 直接弹出一条普通提示（非成就，复用样式）。 */
+/** 直接弹出一条普通提示（非成就，复用样式）。无 DOM 环境静默跳过（永不抛错）。 */
 export function showToast(text: string, icon = "✨"): void {
   queue.push({ icon, title: text, subtitle: "" });
   if (activeTimer === null) showNext();
 }
 
+/** 当前队列长度（用于测试与诊断；不影响展示）。 */
+export function pendingToastCount(): number {
+  return queue.length;
+}
+
 function showNext(): void {
   const c = ensureContainer();
+  if (!c) {
+    // 无 DOM：清空队列避免无限堆积，标记空闲
+    queue.length = 0;
+    activeTimer = null;
+    return;
+  }
   const entry = queue.shift();
   if (!entry) {
     activeTimer = null;
