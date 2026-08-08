@@ -7,8 +7,14 @@ import { BaseGame } from "../../core/engine.ts";
 import { starsByAccuracy } from "../../core/scoring.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
-
-const SHAPES = ["🔴", "🔷", "🟢"]; // 3 种形状/颜色
+import {
+  SHAPES,
+  generateSolution,
+  validate as validateBoard,
+  findConflicts,
+  digBlanks,
+  cycleCell,
+} from "./engine.ts";
 
 export class SudokuShapeGame extends BaseGame {
   constructor() {
@@ -37,20 +43,13 @@ export class SudokuShapeGame extends BaseGame {
     this.reportProgress(this.roundsDone, this.roundTotal);
     this.root.innerHTML = "";
 
-    // 生成一个合法解：每行是基础排列的循环移位（保证每行每列都不重复）
-    const base = SHAPES;
-    this.solution = [];
-    for (let y = 0; y < 3; y++) {
-      for (let x = 0; x < 3; x++) {
-        this.solution.push(base[(x + y) % 3]!);
-      }
-    }
+    // 生成一个合法解（委托给 engine.ts）：每行是基础排列的循环移位
+    this.solution = generateSolution();
     // 挖空：easy 少挖（更简单），hard 多挖
     const blanks =
       this.difficulty === "easy" ? 4 : this.difficulty === "medium" ? 6 : 8;
-    const idxList = shuffle(this.solution.map((_, i) => i));
-    const blankSet = new Set(idxList.slice(0, blanks));
-    this.board = this.solution.map((s, i) => (blankSet.has(i) ? null : s));
+    const { board } = digBlanks(this.solution, blanks, shuffle);
+    this.board = board;
 
     const wrap = document.createElement("div");
     wrap.className = "sds-wrap";
@@ -96,9 +95,7 @@ export class SudokuShapeGame extends BaseGame {
 
   private cycle(i: number, cell: HTMLButtonElement): void {
     if (this.submitted) return;
-    const cur = this.board[i];
-    const idx = cur ? SHAPES.indexOf(cur) : -1;
-    const next = SHAPES[(idx + 1) % SHAPES.length]!;
+    const next = cycleCell(this.board[i]);
     this.board[i] = next;
     cell.textContent = next;
     cell.classList.add("sds-cell--changed");
@@ -149,47 +146,16 @@ export class SudokuShapeGame extends BaseGame {
     }
   }
 
-  /** 校验每行每列是否都不重复。 */
+  /** 校验每行每列是否都不重复（委托给 engine.ts）。 */
   private validate(): boolean {
-    for (let y = 0; y < 3; y++) {
-      const row = [0, 1, 2].map((x) => this.board[y * 3 + x]);
-      if (new Set(row).size !== 3) return false;
-    }
-    for (let x = 0; x < 3; x++) {
-      const col = [0, 1, 2].map((y) => this.board[y * 3 + x]);
-      if (new Set(col).size !== 3) return false;
-    }
-    return true;
+    return validateBoard(this.board);
   }
 
-  /** 标出有重复的格子（行或列里出现 >1 次的）。 */
+  /** 标出有重复的格子（委托给 engine.findConflicts）。 */
   private markConflicts(): void {
-    const conflict = new Set<number>();
-    for (let y = 0; y < 3; y++) {
-      const seen: Record<string, number[]> = {};
-      for (let x = 0; x < 3; x++) {
-        const idx = y * 3 + x;
-        const v = this.board[idx];
-        if (!v) continue;
-        (seen[v] ??= []).push(idx);
-      }
-      Object.values(seen).forEach((arr) => {
-        if (arr.length > 1) arr.forEach((i) => conflict.add(i));
-      });
-    }
-    for (let x = 0; x < 3; x++) {
-      const seen: Record<string, number[]> = {};
-      for (let y = 0; y < 3; y++) {
-        const idx = y * 3 + x;
-        const v = this.board[idx];
-        if (!v) continue;
-        (seen[v] ??= []).push(idx);
-      }
-      Object.values(seen).forEach((arr) => {
-        if (arr.length > 1) arr.forEach((i) => conflict.add(i));
-      });
-    }
-    conflict.forEach((i) => this.cells[i]?.classList.add("sds-cell--conflict"));
+    findConflicts(this.board).forEach((i) =>
+      this.cells[i]?.classList.add("sds-cell--conflict"),
+    );
   }
 
   private injectStyle(): void {

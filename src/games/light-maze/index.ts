@@ -13,7 +13,6 @@ import {
   trace as tracePath,
   type Mirror,
   type Dir,
-  DVEC,
 } from "./engine.ts";
 
 export class LightMazeGame extends BaseGame {
