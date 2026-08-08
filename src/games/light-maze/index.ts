@@ -8,18 +8,13 @@ import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { starsByAccuracy } from "../../core/scoring.ts";
 import { getCssVar, randInt, sample } from "../../lobby/util.ts";
-
-/** 镜子方向：0=空，1=/，2=\ 。 */
-type Mirror = 0 | 1 | 2;
-/** 方向：0=右，1=下，2=左，3=上。 */
-type Dir = 0 | 1 | 2 | 3;
-/** 旋转：右0 下1 左2 上3 → 向量。 */
-const DVEC: ReadonlyArray<readonly [number, number]> = [
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-  [0, -1],
-];
+import {
+  reflect as reflectDir,
+  trace as tracePath,
+  type Mirror,
+  type Dir,
+  DVEC,
+} from "./engine.ts";
 
 export class LightMazeGame extends BaseGame {
   constructor() {
@@ -54,63 +49,18 @@ export class LightMazeGame extends BaseGame {
     this.render();
   }
 
-  /** 镜面反射：方向 d 撞到镜 m 后的新方向。 */
+  /** 镜面反射：方向 d 撞到镜 m 后的新方向（委托给 engine.ts）。 */
   private reflect(d: Dir, m: Exclude<Mirror, 0>): Dir {
-    // / : 右↔上, 下↔左  (0↔3, 1↔2)
-    // \ : 右↔下, 上↔左  (0↔1, 3↔2)
-    if (m === 1) {
-      // /
-      const map: Record<Dir, Dir> = { 0: 3, 3: 0, 1: 2, 2: 1 };
-      return map[d];
-    }
-    const map: Record<Dir, Dir> = { 0: 1, 1: 0, 2: 3, 3: 2 };
-    return map[d];
+    return reflectDir(d, m);
   }
 
-  /** 追踪光线路径。返回格子序列与是否命中目标。 */
+  /** 追踪光线路径（委托给 engine.ts）。返回格子序列与是否命中目标。 */
   private trace(): {
     cells: Array<[number, number]>;
     hit: boolean;
     outOfBounds: boolean;
   } {
-    const cells: Array<[number, number]> = [];
-    let x = -1;
-    let y = this.srcRow;
-    let d: Dir = 0; // 光从左向右进
-    let hit = false;
-    let outOfBounds = false;
-    let guard = 0;
-    while (guard++ < this.n * this.n * 4 + 8) {
-      const [dx, dy] = DVEC[d]!;
-      const nx = x + dx;
-      const ny = y + dy;
-      // 出界判定
-      if (ny < 0 || ny >= this.n) {
-        if (nx === this.n && ny === this.goalRow && d === 0) {
-          hit = true; // 从右侧命中目标（光向右出界到目标行）
-        } else {
-          outOfBounds = true;
-        }
-        break;
-      }
-      if (nx < 0) {
-        outOfBounds = true;
-        break;
-      }
-      if (nx >= this.n) {
-        if (d === 0 && ny === this.goalRow) hit = true;
-        else outOfBounds = true;
-        break;
-      }
-      cells.push([nx, ny]);
-      const m = this.grid[ny]![nx]!;
-      if (m !== 0) {
-        d = this.reflect(d, m);
-      }
-      x = nx;
-      y = ny;
-    }
-    return { cells, hit, outOfBounds };
+    return tracePath(this.grid, this.srcRow, this.goalRow, this.n);
   }
 
   /**
