@@ -189,6 +189,18 @@ R7 聚焦「纯逻辑提取 + 直接测试 + bug 修复 + 成就体系加固 + �
 - **D7** 新增 3 成就（40→43）：three-star-30 满星宗师💎/hard-master-25 困难终结者🛡️/dedicated 持之以恒🔥隐藏（10 个不同游戏各玩满 3 次）+ 11 测试。
 - **D8** toast.ts 错误路径加固（ensureContainer 无 DOM 返回 null 不抛错，与 tts 同款「永不抛错」契约）+ showNext 无 DOM 清空队列避免无限堆积 + pendingToastCount 诊断导出 + 7 测试。
 
+### 第十二轮深化（R12）扫描清单（D1 基线 431/431 绿，578 源文件）
+
+基线 431 测试 / 27 文件全绿。继续「纯逻辑提取 + 直接测试」路线，逐个游戏审查源码，扫描出更多**与 DOM 解耦的核心算法函数**零测试覆盖的候选（每轮独立提取+测试+提交）：
+
+- ⏳ **`sokoban`**（D2 待提取）：纯逻辑丰富——`parse(raw)` 字符串关卡→结构化 Level（cell/box/goal/player 解析）、`isWin(level)` 全目标盖箱判定、`move` 推箱规则（墙挡/箱后箱不可推/箱后墙不可推）。这些是对 Level 结构的纯操作，提取为 `engine.ts` 可直接测试。
+- ⏳ **`light-maze`**（D3 待提取）：镜面反射光路——`reflect(dir, mirror)` 方向变换（/ 与 \ 的方向映射）、`trace(grid, srcRow, goalRow, n)` 光线追踪（出界/命中/防死循环 guard）。纯函数无 DOM 依赖。
+- ⏳ **`sudoku-shape`**（D4 待提取）：3×3 形状数独——`validate(board)` 每行每列不重复校验、解生成（行循环移位）、挖空。与 mini-sudoku 同源思路（拉丁方阵），可对比守护。
+- ⏳ **`equation`**（D5 待提取）：等式填空——`genEquation(diff)`/`mk()` 已是顶层纯函数（a≠b 防一题多解、运算符选择、结果计算），可直接导出测试无需重构。
+- ⏳ **`number-sequence` / `number-bond` / `number-cross`**：数学类题目生成器不变量，待后续轮次。
+- ⏳ **成就体系**：可继续补 milestone 梯度（如 cleared-120/160）或新技能成就。
+- ⏳ **错误路径**：core/audio.ts（Web Audio 缺失降级）、core/particles.ts（无 DOM/无 canvas 降级）等零测试模块待加固。
+
 - **内容深化**：575 个游戏已有，可继续打磨个别游戏的视觉/音效细节与教育内核文案。
 - **家长报告增强**：加入周/月趋势曲线、能力雷达图、导出 PDF 报告。
 - **i18n**：当前中文优先，可加英文/双语切换（UI 文案集中度已较高）。
