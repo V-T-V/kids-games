@@ -84,8 +84,14 @@ export function starsByScore(score: number, limits: [number, number]): number {
 /**
  * 综合：把多个维度算出的星取最小值（短板决定）。
  * 例如同时看用时和准确率时用。
+ *
+ * 防御：先过滤掉 NaN/非有限值（游戏自定义算星可能算出 NaN，
+ * 如 starsByRate 的 correct/total 出现异常），避免 Math.min(NaN,x)=NaN
+ * 污染最终星数导致结算页/成就计算异常。
  */
 export function minStars(...stars: number[]): number {
   if (stars.length === 0) return 3;
-  return Math.max(0, Math.min(3, Math.min(...stars)));
+  const valid = stars.filter((s) => Number.isFinite(s));
+  if (valid.length === 0) return 3;
+  return Math.max(0, Math.min(3, Math.min(...valid)));
 }

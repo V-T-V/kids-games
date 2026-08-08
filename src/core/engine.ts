@@ -288,7 +288,9 @@ export abstract class BaseGame {
     const result: GameResult = {
       gameId: this.gameId,
       cleared: true,
-      stars: Math.max(0, Math.min(3, stars)),
+      // 防御：stars 若为 NaN（游戏自定义算星异常）Math.max(0,Math.min(3,NaN))===NaN，
+      // 会污染存档/成就/结算页。先 Number.isFinite 兜底为 0，再 clamp 到 0-3。
+      stars: Math.max(0, Math.min(3, Number.isFinite(stars) ? stars : 0)),
       difficulty: this.difficulty,
       durationMs,
     };
