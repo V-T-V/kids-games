@@ -8,48 +8,10 @@ import { sfxPop } from "../../core/audio.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, randInt, shuffle } from "../../lobby/util.ts";
-
-interface Eq {
-  text: string;
-  ops: string[];
-  answer: string;
-}
+import { genEquation as genEq, type Eq } from "./engine.ts";
 
 function genEquation(diff: string): Eq {
-  // 生成 "? op ?" 形式，问孩子选哪个运算符使等式成立
-  // 保证 a !== b，避免 hard 难度下 a===b 时 "+" 和 "×" 结果相同导致一题多解
-  // （如 2+2=4 与 2×2=4，孩子选另一个合法运算符会被误判错）
-  const a = randInt(1, 6);
-  let b = randInt(1, 6);
-  while (a === b) b = randInt(1, 6);
-  const ops = diff === "hard" ? ["+", "-", "×"] : ["+", "-"];
-  const op = shuffle(ops)[0]!;
-  let result: number;
-  if (op === "+") result = a + b;
-  else if (op === "-") {
-    const [x, y] = a >= b ? [a, b] : [b, a];
-    result = x - y;
-    return mk(x, y, op, result, ops);
-  } else result = a * b;
-  return mk(a, b, op, result, ops);
-}
-
-function mk(
-  a: number,
-  b: number,
-  op: string,
-  result: number,
-  ops: string[],
-): Eq {
-  const opSym: Record<string, string> = { "+": "➕", "-": "➖", "×": "✖️" };
-  const choices = shuffle([
-    ...new Set([op, ...ops.filter((o) => o !== op).slice(0, 2)]),
-  ]);
-  return {
-    text: `${a}  ?  ${b}  =  ${result}`,
-    ops: choices.map((o) => opSym[o]!),
-    answer: opSym[op]!,
-  };
+  return genEq(diff, randInt, shuffle);
 }
 
 export class EquationGame extends BaseGame {
