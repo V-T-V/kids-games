@@ -10,9 +10,7 @@ import { starsByAccuracy } from "../../core/scoring.ts";
 import { Overlay } from "../../ui/Overlay.ts";
 import { navigate } from "../../router.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
-
-/** 单元格类型：墙 / 地 / 目标点。箱子与人物位置单独维护。 */
-type Cell = "#" | "." | " "; // #墙 空格地 .目标
+import { parse as parseLevel, applyMove, isWin, type Level } from "./engine.ts";
 
 /** 手工关卡。每个字符串等长（同一关内）。已逐一验证可解。 */
 const LEVELS: string[][] = [
@@ -93,15 +91,6 @@ const DIRS: ReadonlyArray<{ dx: number; dy: number; key: string }> = [
   { dx: -1, dy: 0, key: "ArrowLeft" },
 ];
 
-interface Level {
-  cells: Cell[][];
-  player: { x: number; y: number };
-  boxes: boolean[][]; // boxes[y][x] = 是否有箱子
-  goals: boolean[][]; // goals[y][x] = 是否目标
-  w: number;
-  h: number;
-}
-
 export class SokobanGame extends BaseGame {
   constructor() {
     super("sokoban");
@@ -139,60 +128,9 @@ export class SokobanGame extends BaseGame {
     this.render();
   }
 
-  /** 把字符串关卡解析成结构化数据。 */
+  /** 把字符串关卡解析成结构化数据（委托给 engine.ts）。 */
   private parse(raw: string[]): Level {
-    const rows = raw;
-    const h = rows.length;
-    const w = Math.max(...rows.map((r: string) => r.length));
-    const cells: Cell[][] = [];
-    const boxes: boolean[][] = [];
-    const goals: boolean[][] = [];
-    let player = { x: 1, y: 1 };
-    for (let y = 0; y < h; y++) {
-      const row = rows[y]!;
-      cells.push([]);
-      boxes.push([]);
-      goals.push([]);
-      for (let x = 0; x < w; x++) {
-        const ch = row[x] ?? " ";
-        let cell: Cell = " ";
-        let box = false;
-        let goal = false;
-        switch (ch) {
-          case "#":
-            cell = "#";
-            break;
-          case ".":
-            cell = ".";
-            goal = true;
-            break;
-          case "$":
-            cell = " ";
-            box = true;
-            break;
-          case "*":
-            cell = ".";
-            box = true;
-            goal = true;
-            break;
-          case "@":
-            cell = " ";
-            player = { x, y };
-            break;
-          case "+":
-            cell = ".";
-            goal = true;
-            player = { x, y };
-            break;
-          default:
-            cell = " ";
-        }
-        cells[y]!.push(cell);
-        boxes[y]!.push(box);
-        goals[y]!.push(goal);
-      }
-    }
-    return { cells, player, boxes, goals, w, h };
+    return parseLevel(raw);
   }
 
   private bindKeys(): void {
@@ -352,28 +290,12 @@ export class SokobanGame extends BaseGame {
     });
   }
 
-  /** 尝试朝 (dx,dy) 移动一步。 */
+  /** 尝试朝 (dx,dy) 移动一步（规则委托给 engine.applyMove，副作用在此）。 */
   private move(dx: number, dy: number): void {
     if (this.locked) return;
-    const lv = this.level;
-    const nx = lv.player.x + dx;
-    const ny = lv.player.y + dy;
-    if (nx < 0 || ny < 0 || nx >= lv.w || ny >= lv.h) return;
-    const target = lv.cells[ny]![nx]!;
-    if (target === "#") return;
-    // 如果目标格有箱子，尝试把箱子推一格
-    if (lv.boxes[ny]![nx]!) {
-      const bx = nx + dx;
-      const by = ny + dy;
-      if (bx < 0 || by < 0 || bx >= lv.w || by >= lv.h) return;
-      if (lv.cells[by]![bx]! === "#") return;
-      if (lv.boxes[by]![bx]!) return; // 后面也有箱子
-      // 推动
-      lv.boxes[ny]![nx] = false;
-      lv.boxes[by]![bx] = true;
-    }
-    lv.player.x = nx;
-    lv.player.y = ny;
+    const { level: next, moved } = applyMove(this.level, dx, dy);
+    if (!moved) return;
+    this.level = next;
     this.moves += 1;
     sfxPop();
     this.resetWrongStreak();
@@ -411,13 +333,7 @@ export class SokobanGame extends BaseGame {
   }
 
   private isWin(): boolean {
-    const lv = this.level;
-    for (let y = 0; y < lv.h; y++) {
-      for (let x = 0; x < lv.w; x++) {
-        if (lv.goals[y]![x]! && !lv.boxes[y]![x]!) return false;
-      }
-    }
-    return true;
+    return isWin(this.level);
   }
 
   private onWin(): void {
