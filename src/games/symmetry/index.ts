@@ -5,6 +5,7 @@
 import { BaseGame } from "../../core/engine.ts";
 import { sfxPop } from "../../core/audio.ts";
 import { getCssVar, shuffle } from "../../lobby/util.ts";
+import { countFilled, genHalf, halfOf, isMirror } from "./engine.ts";
 
 export class SymmetryGame extends BaseGame {
   constructor() {
@@ -32,16 +33,11 @@ export class SymmetryGame extends BaseGame {
   private startRound(): void {
     this.root.innerHTML = "";
     this.reportProgress(this.roundsDone, this.roundTotal);
-    const half = Math.ceil(this.n / 2);
+    const half = halfOf(this.n);
     // 左半随机填充
-    this.left = [];
-    for (let y = 0; y < this.n; y++) {
-      const row: boolean[] = [];
-      for (let x = 0; x < half; x++) row.push(Math.random() < 0.5);
-      this.left.push(row);
-    }
+    this.left = genHalf(this.n);
     this.right = Array.from({ length: this.n }, () => Array(half).fill(false));
-    this.need = this.left.flat().filter(Boolean).length;
+    this.need = countFilled(this.left);
 
     const wrap = document.createElement("div");
     wrap.className = "sy-wrap";
@@ -86,15 +82,8 @@ export class SymmetryGame extends BaseGame {
     this.right[y]![x] = !cur;
     c.classList.toggle("sy-cell--on");
     sfxPop();
-    // 检查是否与左半镜像一致
-    const half = this.left[0]!.length;
-    let ok = true;
-    for (let yy = 0; yy < this.n && ok; yy++) {
-      for (let xx = 0; xx < half && ok; xx++) {
-        if (this.right[yy]![xx] !== this.left[yy]![half - 1 - xx]) ok = false;
-      }
-    }
-    if (ok) {
+    // 检查是否与左半镜像一致（纯函数判定，已提取至 engine.isMirror）
+    if (isMirror(this.left, this.right)) {
       this.onCorrect(window.innerWidth / 2, window.innerHeight / 2);
       this.resetWrongStreak();
       this.roundsDone += 1;
