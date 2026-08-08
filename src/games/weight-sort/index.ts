@@ -26,6 +26,7 @@ export class WeightSortGame extends BaseGame {
   private roundTotal = 0;
   private picked: { emoji: string; w: number }[] = [];
   private expected = 1;
+  private expectedIdx = 0; // 当前应点的 picked 索引（修复：不再依赖 w 值连续递增）
 
   protected mount(): void {
     this.roundTotal =
@@ -43,11 +44,13 @@ export class WeightSortGame extends BaseGame {
 
   private startRound(): void {
     this.root.innerHTML = "";
-    this.expected = 1;
     this.reportProgress(this.roundsDone, this.roundTotal);
     this.picked = shuffle(ANIMALS)
       .slice(0, this.count())
       .sort((a, b) => a.w - b.w);
+    // FIX: expected 按实际 picked 序列初始化（不再假设 w 值连续）
+    this.expectedIdx = 0;
+    this.expected = this.picked[0]?.w ?? 1;
     // 展示顺序打乱（但内部已排序）
     const shown = shuffle(this.picked);
 
@@ -99,8 +102,10 @@ export class WeightSortGame extends BaseGame {
       const r = btn.getBoundingClientRect();
       this.onCorrect(r.left + r.width / 2, r.top + r.height / 2);
       this.resetWrongStreak();
-      this.expected += 1;
-      if (this.expected > this.count()) {
+      this.expectedIdx += 1;
+      // FIX: 按 picked 排序序列递增，而非 expected+1（w 值可能不连续）
+      this.expected = this.picked[this.expectedIdx]?.w ?? 999;
+      if (this.expectedIdx >= this.picked.length) {
         this.roundsDone += 1;
         this.trackTimeout(() => {
           if (this.roundsDone >= this.roundTotal)

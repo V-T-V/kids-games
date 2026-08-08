@@ -50,7 +50,11 @@ export class ColorReactionGame extends BaseGame {
     speechSynthesis.cancel();
   }
 
+  private roundTransitioning = false; // 防重入锁
+
   private startRound(): void {
+    if (this.roundTransitioning) return; // FIX: 防止快速操作时重复 startRound 导致 DOM 卡住
+    this.roundTransitioning = true;
     this.root.innerHTML = "";
     this.reportProgress(this.roundsDone, this.roundTotal);
     const n =
@@ -93,6 +97,7 @@ export class ColorReactionGame extends BaseGame {
           this.resetWrongStreak();
           this.roundsDone += 1;
           this.trackTimeout(() => {
+            this.roundTransitioning = false; // 解锁
             if (this.roundsDone >= this.roundTotal)
               this.finishClear(starsByAccuracy(this.wrongCount));
             else this.startRound();

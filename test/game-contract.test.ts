@@ -170,3 +170,66 @@ test("游戏契约: reverse-memory 修复回归——完成倒序后结算期间
     "reverse-memory.startRound() 必须重置 this.locked = false 以开新一轮",
   );
 });
+
+test("游戏契约: color-reaction 修复回归——结算期间防重入 startRound 防 DOM 卡住", () => {
+  // 曾有 bug：color-reaction 的正确点击进入 900ms 结算（trackTimeout 回调里才
+  // finishClear/startRound），但期间无锁守卫，玩家快速点击其它正确色块会再次触发
+  // roundsDone += 1 并再次进入同一回调链；更糟的是回调内直接 startRound() 重建 DOM，
+  // 若上一轮 DOM 尚未稳定又被重建，会导致画面卡住、按钮错位、轮次计数错乱。
+  // 守护：color-reaction 必须有 roundTransitioning 字段 + startRound() 入口守卫
+  // + 进入结算前置 true + 回调内 startRound 前重置 false（同款 locked 守卫模式）。
+  const g = listGames().find((x) => x.dir === "color-reaction");
+  assert.ok(g, "color-reaction 游戏应存在");
+  const src = g!.src;
+  assert.match(
+    src,
+    /roundTransitioning\s*[:=]/,
+    "color-reaction 必须声明 roundTransitioning 字段",
+  );
+  assert.match(
+    src,
+    /startRound\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*this\.roundTransitioning\s*\)\s*return/,
+    "color-reaction.startRound() 必须在入口检查 this.roundTransitioning 早返回",
+  );
+  assert.match(
+    src,
+    /this\.roundTransitioning\s*=\s*true/,
+    "color-reaction.startRound() 进入后必须立即置 this.roundTransitioning = true",
+  );
+  assert.match(
+    src,
+    /this\.roundTransitioning\s*=\s*false/,
+    "color-reaction 结算回调内 startRound 前必须重置 this.roundTransitioning = false",
+  );
+});
+
+test("游戏契约: weight-sort 修复回归——按 picked 序列递增排序不依赖 w 值连续", () => {
+  // 曾有 bug：weight-sort 用 expected=this.picked[0].w 初始化后每答对一个 expected += 1，
+  // 但 ANIMALS 经 shuffle().slice(0, count) 后 w 值并不一定连续
+  // （例：shuffle 取前 4 得 w=[1,3,5,6]，expected 走 1→2 时永远答不对第二个 w=3）。
+  // 守护：weight-sort 必须用 expectedIdx 跟踪 picked 索引，按 picked[expectedIdx].w
+  // 推进，而不是 expected+1。
+  const g = listGames().find((x) => x.dir === "weight-sort");
+  assert.ok(g, "weight-sort 游戏应存在");
+  const src = g!.src;
+  assert.match(
+    src,
+    /expectedIdx\s*[=:]?\s*0/,
+    "weight-sort 必须声明 expectedIdx 字段并在 startRound 初始化为 0",
+  );
+  assert.match(
+    src,
+    /this\.expected\s*=\s*this\.picked\[this\.expectedIdx\]/,
+    "weight-sort expected 必须取自 this.picked[this.expectedIdx]，不能写死 +1",
+  );
+  assert.match(
+    src,
+    /this\.expectedIdx\s*>=\s*this\.picked\.length/,
+    "weight-sort 完成判定必须基于 expectedIdx 达到 picked.length，不能写死固定数",
+  );
+  assert.doesNotMatch(
+    src,
+    /this\.expected\s*\+=\s*1/,
+    "weight-sort 不得再用 this.expected += 1 推进（w 值非连续会卡关）",
+  );
+});
