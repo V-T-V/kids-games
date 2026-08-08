@@ -160,6 +160,7 @@ test("里程碑成就梯度: 1/5/10/20/40/80/200/all 全部存在", () => {
     "cleared-40",
     "cleared-80",
     "cleared-200",
+    "cleared-300",
     "all-clear",
   ]) {
     assert.ok(ids.has(id as never), `缺里程碑成就 ${id}`);
@@ -179,12 +180,23 @@ test("里程碑成就梯度: 通关 80 个解锁 cleared-80（40 不够）", () 
   assert.ok(r80.includes("cleared-80"), "80 个应解锁 cleared-80");
 });
 
-test("里程碑成就梯度: 通关 200 个解锁 cleared-200", () => {
+test("里程碑成就梯度: 通关 200 个解锁 cleared-200（300 不够）", () => {
   const save = createEmptySave();
   clearGames(save, ALL_SAMPLE_80().slice(0, 200), { stars: 1 });
   const r = checkMilestoneAchievements(save, tagOf);
   assert.ok(r.includes("cleared-200"), "200 个应解锁 cleared-200");
   assert.ok(r.includes("cleared-80"));
+  assert.ok(!r.includes("cleared-300"), "200 个不应解锁 cleared-300");
+});
+
+test("里程碑成就梯度: 通关 300 个解锁 cleared-300（补 200→575 稀疏梯度）", () => {
+  const save = createEmptySave();
+  clearGames(save, ALL_GAME_IDS.slice(0, 300).map((id) => id as string), {
+    stars: 1,
+  });
+  const r = checkMilestoneAchievements(save, tagOf);
+  assert.ok(r.includes("cleared-300"), "300 个应解锁 cleared-300");
+  assert.ok(r.includes("cleared-200"));
 });
 
 test("里程碑成就梯度单调：低档解锁时高档可能未解锁（不跳档）", () => {
@@ -194,10 +206,11 @@ test("里程碑成就梯度单调：低档解锁时高档可能未解锁（不�
   assert.ok(r.includes("cleared-40"));
   assert.ok(!r.includes("cleared-80"));
   assert.ok(!r.includes("cleared-200"));
+  assert.ok(!r.includes("cleared-300"));
 });
 
-test("里程碑成就: cleared-80/200 category=milestone 且元数据完整", () => {
-  for (const id of ["cleared-80", "cleared-200"]) {
+test("里程碑成就: cleared-80/200/300 category=milestone 且元数据完整", () => {
+  for (const id of ["cleared-80", "cleared-200", "cleared-300"]) {
     const m = getAchievementMeta(id);
     assert.equal(m.category, "milestone");
     assert.ok(m.name.length > 0, `${id} 缺 name`);
@@ -328,6 +341,6 @@ test("新成就元数据: three-star-30/hard-master-25/dedicated 完整且分类
   assert.ok(mDed.name.length > 0 && mDed.icon.length > 0 && mDed.hint.length > 0);
 });
 
-test("成就总数: 新增 3 个后恰为 43（40→43）", () => {
-  assert.equal(ACHIEVEMENTS.length, 43);
+test("成就总数: 新增 cleared-300 后恰为 44（43→44）", () => {
+  assert.equal(ACHIEVEMENTS.length, 44);
 });
