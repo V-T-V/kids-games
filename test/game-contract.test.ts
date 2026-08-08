@@ -139,3 +139,34 @@ test("游戏契约: pipe-connect 修复回归——rotate 结算期间锁定防 
     "pipe-connect.startRound() 必须重置 this.locked = false 以开新一轮",
   );
 });
+
+test("游戏契约: reverse-memory 修复回归——完成倒序后结算期间锁定防误触 onWrong", () => {
+  // 曾有 bug：reverse-memory 的 click() 完成倒序（revStep>=seq.length）后进入 1000ms 结算
+  // （trackTimeout 回调里才 finishClear/startRound），但期间 animating=false 且无 locked 守卫，
+  // 玩家继续点击 → expectIdx=seq.length-1-seq.length=-1 → expected=undefined → 必进 else 分支
+  // 误触 onWrong（虚增 wrongCount 压低星数）+ 可能弹休息浮层与 startRound 冲突。
+  // 守护：reverse-memory 必须有 locked 字段 + click() 入口守卫 + 完成倒序前置 true + startRound 重置 false。
+  const rm = listGames().find((g) => g.dir === "reverse-memory");
+  assert.ok(rm, "reverse-memory 游戏应存在");
+  const src = rm!.src;
+  assert.match(
+    src,
+    /private\s+locked\s*[:=]/,
+    "reverse-memory 必须声明 locked 字段",
+  );
+  assert.match(
+    src,
+    /click\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*this\.animating\s*\|\|\s*this\.locked\s*\)\s*return/,
+    "reverse-memory.click() 必须在入口检查 this.locked 早返回",
+  );
+  assert.match(
+    src,
+    /this\.revStep\s*>=\s*this\.seq\.length[\s\S]*?this\.locked\s*=\s*true/,
+    "reverse-memory 完成倒序（revStep>=seq.length）后必须置 this.locked = true",
+  );
+  assert.match(
+    src,
+    /startRound\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?this\.locked\s*=\s*false/,
+    "reverse-memory.startRound() 必须重置 this.locked = false 以开新一轮",
+  );
+});

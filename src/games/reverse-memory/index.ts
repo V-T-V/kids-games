@@ -20,6 +20,7 @@ export class ReverseMemoryGame extends BaseGame {
   private seq: string[] = [];
   private revStep = 0; // 从最后往前点的索引
   private animating = false;
+  private locked = false; // 结算期间锁定，防额外点击误触 onWrong / roundsDone
 
   protected mount(): void {
     this.roundTotal =
@@ -39,6 +40,7 @@ export class ReverseMemoryGame extends BaseGame {
     this.root.innerHTML = "";
     this.reportProgress(this.roundsDone, this.roundTotal);
     this.revStep = 0;
+    this.locked = false;
     this.animating = true;
     const len = this.len();
     const pool = shuffle(ICONS).slice(0, len);
@@ -89,7 +91,7 @@ export class ReverseMemoryGame extends BaseGame {
   }
 
   private click(icon: string, btn: HTMLButtonElement): void {
-    if (this.animating) return;
+    if (this.animating || this.locked) return;
     // 期望从最后一个开始：seq[len-1], seq[len-2], ...
     const expectIdx = this.seq.length - 1 - this.revStep;
     const expected = this.seq[expectIdx]!;
@@ -103,6 +105,7 @@ export class ReverseMemoryGame extends BaseGame {
       const showEl = document.getElementById("rm-display");
       if (showEl) showEl.textContent = `${this.revStep}/${this.seq.length}`;
       if (this.revStep >= this.seq.length) {
+        this.locked = true;
         this.roundsDone += 1;
         this.trackTimeout(() => {
           if (this.roundsDone >= this.roundTotal)
