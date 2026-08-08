@@ -87,8 +87,9 @@ test("categoryOf: 取 tag 顶层分类（· 前部分）", () => {
   assert.equal(categoryOf("认知·颜色"), "认知");
   assert.equal(categoryOf("数学·运算"), "数学");
   assert.equal(categoryOf("无分隔符"), "无分隔符");
-  // 空串 split 得 [""]，[0] 是空串而非 undefined，所以返回空串（不触发 ?? 回退）
-  assert.equal(categoryOf(""), "");
+  // 空串 split 得 [""]，[0] 是空串；用 || 回退「其他」（儿童应用中空分类会污染 UI，
+  // 旧行为用 ?? 不捕获空串会返回 ""，已修正为 || 兜底）
+  assert.equal(categoryOf(""), "其他");
 });
 
 test("parseAgeRange: 标准格式 / 空格变体 / 非法回退默认", () => {

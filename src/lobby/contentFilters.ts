@@ -24,7 +24,9 @@ export interface GameDiscoveryMeta {
 }
 
 export function categoryOf(tag: string): string {
-  return tag.split("·")[0] ?? "其他";
+  // 用 || 而非 ?? ：空字符串 tag（如 ""）也应回退「其他」，
+  // 因为 "".split("·")[0] === ""（?? 不捕获空串会返回空串）。
+  return tag.split("·")[0] || "其他";
 }
 
 export function discoveryMeta(game: GameMeta): GameDiscoveryMeta {
@@ -43,6 +45,8 @@ export function filterGames(
   filters: LobbyFilters,
 ): GameMeta[] {
   const term = filters.searchTerm.trim().toLowerCase();
+  // 防御：progress 可能为 null/undefined（外部传入异常），归一为空对象避免抛错。
+  const safeProgress: Record<string, GameProgressSnapshot> = progress ?? {};
   return games.filter((game) => {
     const meta = discoveryMeta(game);
     if (filters.category !== "全部" && meta.category !== filters.category) {
@@ -57,7 +61,7 @@ export function filterGames(
     ) {
       return false;
     }
-    const state = progress[game.id];
+    const state = safeProgress[game.id];
     if (filters.completion === "uncleared" && state?.cleared) return false;
     if (filters.completion === "cleared" && !state?.cleared) return false;
     if (term && !matchesSearch(game, term, meta)) return false;
